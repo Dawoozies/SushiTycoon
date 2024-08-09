@@ -1,18 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class Collectable : MonoBehaviour
+public class Collectable : MonoBehaviour, ICollectable
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public bool collected => collectionProgress > collectionTime;
+    [SerializeField] Transform collectableGraphic;
+    public Transform graphic => collectableGraphic;
+    public Vector2 position => transform.position;
 
-    // Update is called once per frame
-    void Update()
+    [SerializeField] float collectionTime;
+    float collectionProgress;
+    public void Collect(float collectSpeed)
     {
-        
+        collectionProgress += collectSpeed * Time.deltaTime;
     }
+}
+public interface ICollectable
+{
+    public bool collected { get; }
+    public void Collect(float collectSpeed);
+    public Transform graphic { get; }
+    public Vector2 position { get; }
 }

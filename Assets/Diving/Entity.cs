@@ -2,29 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public class Entity : MonoBehaviour
 {
     [SerializeField] Transform graphicParent;
     NavMeshAgent agent;
-    SpriteRenderer[] spriteRenderers;
-    public Color entityColor;
+    public UnityEvent onEntitySpawned;
     protected virtual void Start()
     {
-        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
         agent = GetComponent<NavMeshAgent>();
-    }
-    protected virtual void UpdateColor()
-    {
-        Color color = entityColor * Level.LevelDepthGradient.Evaluate(Level.ins.GetDepthValueAtPoint(transform.position));
-        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
-        {
-            spriteRenderer.color = color;
-        }
     }
     protected virtual void Update()
     {
-        UpdateColor();
         Vector3 localScale = graphicParent.transform.localScale;
         if (agent.velocity.x > 0)
         {
