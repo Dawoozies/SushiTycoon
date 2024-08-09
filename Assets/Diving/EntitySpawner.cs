@@ -9,6 +9,7 @@ public class EntitySpawner : MonoBehaviour
     [SerializeField] float spawnRadius;
     [SerializeField] int entitiesPerPoint;
     [SerializeField] GameObject entityPrefab;
+    [SerializeField, ReorderableList] CollectableData[] collectableData;
     protected virtual void Start()
     {
         foreach (Transform t in spawnPoints)
@@ -17,6 +18,11 @@ public class EntitySpawner : MonoBehaviour
             {
                 Vector2 p = (Vector2)t.position + Random.insideUnitCircle * spawnRadius;
                 GameObject e = Instantiate(entityPrefab, p, Quaternion.identity);
+                ICollectable collectable;
+                if(e.TryGetComponent(out collectable))
+                {
+                    collectable.SetCollectableData(collectableData[Random.Range(0,collectableData.Length)]);
+                }
             }
         }
     }

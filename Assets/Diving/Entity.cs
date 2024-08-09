@@ -6,7 +6,6 @@ using UnityEngine.Events;
 
 public class Entity : MonoBehaviour
 {
-    [SerializeField] Transform graphicParent;
     NavMeshAgent agent;
     public UnityEvent onEntitySpawned;
     protected virtual void Start()
@@ -15,15 +14,5 @@ public class Entity : MonoBehaviour
     }
     protected virtual void Update()
     {
-        Vector3 localScale = graphicParent.transform.localScale;
-        if (agent.velocity.x > 0)
-        {
-            localScale.x = -1;
-        }
-        if(agent.velocity.x < 0)
-        {
-            localScale.x = 1;
-        }
-        graphicParent.transform.localScale = localScale;
     }
 }

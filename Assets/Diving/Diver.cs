@@ -41,16 +41,26 @@ public class Diver : MonoBehaviour
 
         if(targetedCollectable != null)
         {
-            if(!targetedCollectable.collected && Vector2.Distance(transform.position, targetedCollectable.position) <= collectionRadius)
+            if(Vector2.Distance(transform.position, targetedCollectable.position) <= collectionRadius)
             {
-                targetedCollectable.Collect(collectionSpeed);
+                if (!targetedCollectable.collected)
+                {
+                    targetedCollectable.CollectProgress(collectionSpeed);
+                }
+                if (targetedCollectable.collected)
+                {
+                    targetedCollectable.Collect(collectionParent);
+                    diverNavigationSystem.ClearTarget();
+                    targetedCollectable = null;
+                }
             }
-
-            if(targetedCollectable.collected)
+            else
             {
-                targetedCollectable.graphic.parent = collectionParent;
-                diverNavigationSystem.ClearTarget();
-                targetedCollectable = null;
+                if(targetedCollectable.collected)
+                {
+                    diverNavigationSystem.ClearTarget();
+                    targetedCollectable = null;
+                }
             }
         }
         if(currentTask != DiverTask.Resurface && oxygen > 0 && weight < weightCapacity)
@@ -73,8 +83,10 @@ public class Diver : MonoBehaviour
     {
         if (targetedCollectable != null)
             return;
-        diverNavigationSystem.SetTarget(col.transform);
         targetedCollectable = col.transform.GetComponentInParent<ICollectable>();
+        if (targetedCollectable.collected)
+            return;
+        diverNavigationSystem.SetTarget(col.transform);
     }
     void OnSurfaceDetected(Collider2D col)
     {
