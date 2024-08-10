@@ -7,12 +7,22 @@ using UnityEngine.Events;
 public class Diver : MonoBehaviour
 {
     [SerializeField] DiverTask currentTask;
-    [SerializeField] float oxygenCapacity;
-    float oxygen;
+    [SerializeField, BeginGroup("Oxygen Parameters", Style = GroupStyle.Round)] 
+    float oxygenCapacity;
+    [SerializeField] float oxygen;
     [SerializeField] float oxygenRestoreRate;
-    [SerializeField] float weightCapacity;
-    float weight;
-    [SerializeField] Transform collectionParent;
+    ResourceBarArgs oxygenResourceBarArgs = new();
+    [SerializeField] Transform oxygenBarPlacement;
+    [SerializeField, ReorderableList, EndGroup] Gradient[] oxygenBarGradients;
+
+    [SerializeField, BeginGroup("Weight Parameters", Style = GroupStyle.Round)] 
+    float weightCapacity;
+    [SerializeField] float weight;
+    ResourceBarArgs weightResourceBarArgs = new();
+    [SerializeField] Transform weightBarPlacement;
+    [SerializeField, ReorderableList, EndGroup] Gradient[] weightBarGradients;
+
+    [SerializeField, BeginGroup("Collecting Parameters", Style = GroupStyle.Round)] Transform collectionParent;
     [SerializeField] CircleCollider2D collectableDetectionCircle;
     [SerializeField] float collectableDetectMaxRadius;
     [SerializeField] float collectableDetectRadiusIncreaseRate;
@@ -20,17 +30,26 @@ public class Diver : MonoBehaviour
     [SerializeField] float collectionSpeed;
     [SerializeField] TriggerVolumeEvents targetDetectionEvents;
     DiverNavigation diverNavigationSystem;
-    public UnityEvent<ICollectable> onCollectedCollectable;
+    [SerializeField] Transform collectionTextPlacement;
+    [EndGroup] public UnityEvent<ICollectable> onCollectedCollectable;
     ICollectable targetedCollectable;
+    ActionTextArgs collectionTextArgs = new();
+    bool inCollectionRadius;
+    List<ICollectable> bag = new();
 
-    [SerializeField] TriggerVolumeEvents resurfaceDetectionEvents;
-    [SerializeField] bool atSurface;
+    [SerializeField, BeginGroup("Resurface Parameters", Style = GroupStyle.Round)] 
+    TriggerVolumeEvents resurfaceDetectionEvents;
+    [SerializeField, EndGroup] bool atSurface;
     protected virtual void Start()
     {
         diverNavigationSystem = GetComponent<DiverNavigation>();
         targetDetectionEvents.RegisterCollisionCallback(OnTargetDetected, CollisionEventType.Enter);
         resurfaceDetectionEvents.RegisterCollisionCallback(OnSurfaceDetected, CollisionEventType.Stay);
         resurfaceDetectionEvents.RegisterCollisionCallback(OnSurfaceExit, CollisionEventType.Exit);
+
+        ResourceBarPool.ins.Request(OxygenBarFetch);
+        ResourceBarPool.ins.Request(WeightBarFetch);
+        ActionTextPool.ins.Request(CollectionTextFetch);
     }
     protected virtual void Update()
     {
@@ -42,7 +61,8 @@ public class Diver : MonoBehaviour
 
         if(targetedCollectable != null)
         {
-            if(Vector2.Distance(transform.position, targetedCollectable.position) <= collectionRadius)
+            inCollectionRadius = Vector2.Distance(transform.position, targetedCollectable.position) <= collectionRadius;
+            if (inCollectionRadius)
             {
                 if (!targetedCollectable.collected)
                 {
@@ -50,7 +70,7 @@ public class Diver : MonoBehaviour
                 }
                 if (targetedCollectable.collected)
                 {
-                    targetedCollectable.Collect(collectionParent);
+                    targetedCollectable.Collect(collectionParent, ref bag);
                     diverNavigationSystem.ClearTarget();
                     targetedCollectable = null;
                 }
@@ -64,6 +84,11 @@ public class Diver : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            inCollectionRadius = false;
+        }
+
         if(currentTask != DiverTask.Resurface && oxygen > 0 && weight < weightCapacity)
         {
             currentTask = DiverTask.Collect;
@@ -78,6 +103,16 @@ public class Diver : MonoBehaviour
         if(!atSurface && oxygen > 0)
         {
             oxygen -= Time.deltaTime;
+        }
+
+        CalculateWeight();
+    }
+    void CalculateWeight()
+    {
+        weight = 0f;
+        foreach (var item in bag)
+        {
+            weight += item.weight;
         }
     }
     void OnTargetDetected(Collider2D col)
@@ -110,6 +145,35 @@ public class Diver : MonoBehaviour
     void OnSurfaceExit(Collider2D col)
     {
         atSurface = false;
+    }
+    ResourceBarArgs OxygenBarFetch()
+    {
+        oxygenResourceBarArgs.worldPos = oxygenBarPlacement.position;
+        oxygenResourceBarArgs.maxValue = oxygenCapacity;
+        oxygenResourceBarArgs.value = oxygen;
+        oxygenResourceBarArgs.gradients = oxygenBarGradients;
+        return oxygenResourceBarArgs;
+    }
+    ResourceBarArgs WeightBarFetch()
+    {
+        weightResourceBarArgs.worldPos = weightBarPlacement.position;
+        weightResourceBarArgs.maxValue = weightCapacity;
+        weightResourceBarArgs.value = weight;
+        weightResourceBarArgs.gradients = weightBarGradients;
+        return weightResourceBarArgs;
+    }
+    ActionTextArgs CollectionTextFetch()
+    {
+        collectionTextArgs.worldPos = collectionTextPlacement.position;
+        string[] textLines = { "", "" };
+        if (currentTask == DiverTask.Collect && inCollectionRadius && targetedCollectable != null)
+        {
+            textLines[0] = "Collecting";
+            textLines[1] = $"{Mathf.Floor(targetedCollectable.progressPercentage*10)/10}%";
+
+        }
+        collectionTextArgs.textLines = textLines;
+        return collectionTextArgs;
     }
 }
 [Serializable]

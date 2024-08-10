@@ -12,8 +12,18 @@ public class Collectable : MonoBehaviour, ICollectable
     float collectionProgress;
     public UnityEvent onSetCollectableData;
     public UnityEvent onCollect;
+
+    public float progressPercentage { 
+        get { return (collectionProgress / collectionTime)*100f; } 
+    }
+
+    public bool beingCollected { get => collectProgressThisFrame; }
+    bool collectProgressThisFrame;
+
+    bool inABag;
     public void CollectProgress(float collectSpeed)
     {
+        collectProgressThisFrame = true;
         collectionProgress += collectSpeed * Time.deltaTime;
     }
     public void SetCollectableData(CollectableData collectableData)
@@ -24,10 +34,19 @@ public class Collectable : MonoBehaviour, ICollectable
         GameObject entityBase = Instantiate(collectableData.entityBase, transform);
         entityBase.transform.localPosition = Vector3.zero;
     }
-    public void Collect(Transform collectionParent)
+    public void Collect(Transform collectionParent, ref List<ICollectable> bag)
     {
+        if (inABag)
+            return;
+
         onCollect?.Invoke();
         transform.parent = collectionParent;
+        bag.Add(this);
+        inABag = true;
+    }
+    void LateUpdate()
+    {
+        collectProgressThisFrame = false;
     }
 }
 public interface ICollectable
@@ -37,5 +56,7 @@ public interface ICollectable
     public Vector2 position { get; }
     public float weight { get; }
     public void SetCollectableData(CollectableData collectableData);
-    public void Collect(Transform collectionParent);
+    public void Collect(Transform collectionParent, ref List<ICollectable> bag);
+    public float progressPercentage { get; }
+    bool beingCollected { get; }
 }
