@@ -9,6 +9,7 @@ public class Diver : MonoBehaviour
     [SerializeField] DiverTask currentTask;
     [SerializeField] float oxygenCapacity;
     float oxygen;
+    [SerializeField] float oxygenRestoreRate;
     [SerializeField] float weightCapacity;
     float weight;
     [SerializeField] Transform collectionParent;
@@ -94,7 +95,7 @@ public class Diver : MonoBehaviour
 
         if(oxygen < oxygenCapacity)
         {
-            oxygen += Time.deltaTime * 100f;
+            oxygen += Time.deltaTime * oxygenRestoreRate;
             if(oxygen > oxygenCapacity)
             {
                 oxygen = oxygenCapacity;
