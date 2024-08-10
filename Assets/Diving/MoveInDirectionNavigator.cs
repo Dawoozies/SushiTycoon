@@ -22,4 +22,8 @@ public class MoveInDirectionNavigator : Navigator
     {
         base.Update();
     }
+    public virtual void SetMoveDirection(Vector3 moveDir)
+    {
+        moveDirection = moveDir;
+    }
 }
