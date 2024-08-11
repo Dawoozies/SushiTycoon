@@ -15,10 +15,12 @@ public class DockWorker : MonoBehaviour
     Boat boat;
     bool boatDocked;
 
-    [SerializeField] TriggerVolumeEvents boatDetectionEvents;
+    [SerializeField] TriggerVolumeEvents detectionEvents;
     private void Start()
     {
         navigation = GetComponent<Navigation>();
+        detectionEvents.RegisterCollisionCallback(AtBoat, CollisionEventType.Stay);
+        detectionEvents.RegisterCollisionCallback(AtItemDropOff, CollisionEventType.Stay);
     }
     private void Update()
     {
@@ -28,7 +30,10 @@ public class DockWorker : MonoBehaviour
             currentTask = DockWorkerTask.Boat;
             navigation.SetTarget(boat.transform);
         }
-
+        if(!boatDocked)
+        {
+            navigation.ClearTarget();
+        }
         navigation.SetActiveNavigator((int)currentTask);
     }
     void SetActiveArms(int activeIndex)
@@ -48,9 +53,36 @@ public class DockWorker : MonoBehaviour
         boat = null;
         boatDocked = false;
     }
-    public void OnBoatDetected(Collider2D boatCollider)
+    void AtBoat(Collider2D other)
     {
+        if(other.CompareTag("Boat"))
+        {
+            if (boatDocked && currentTask == DockWorkerTask.Boat)
+            {
+                heldCollectable = boat.TakeCollectableFromBoat();
+                if (heldCollectable != null)
+                {
+                    heldCollectable.DockWorkerCollect(holdPoint);
+                    holdingSomething = true;
+                    currentTask = DockWorkerTask.ItemDropOff;
+                }
+            }
+        }
 
+    }
+    void AtItemDropOff(Collider2D other)
+    {
+        if(other.CompareTag("ItemDropOff"))
+        {
+            if (holdingSomething)
+            {
+                IngredientStorage.ins.AddToStorage(heldCollectable.collectableData, 1);
+                heldCollectable.ReturnToPool();
+                heldCollectable = null;
+                holdingSomething = false;
+                currentTask = DockWorkerTask.Idle;
+            }
+        }
     }
 }
 public enum DockWorkerTask
