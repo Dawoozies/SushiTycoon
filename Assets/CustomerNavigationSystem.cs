@@ -19,6 +19,7 @@ public class CustomerNavigationSystem : NavigationSystem
     Seat seat;
     float customerSpeedFull;
     public float inQueueSpeed;
+    public float slowDistance;
 
     public float queuePatience;
 
@@ -32,6 +33,7 @@ public class CustomerNavigationSystem : NavigationSystem
 
         customerSpeedFull = agent.speed;
         inQueueSpeed = customerSpeedFull / 8f;
+        slowDistance = 2f;
         queuePatience = UnityEngine.Random.Range(10, 120); // Low numbers just for testing. Tweak
     }
     protected override void Update()
@@ -65,7 +67,7 @@ public class CustomerNavigationSystem : NavigationSystem
 
                 positionInQueue = QueueSystem.ins.JoinQueue(placeInQueue, out int newPosition);
                 Debug.Log("queuePosition: " + newPosition);
-                if (Vector3.Distance(transform.position, positionInQueue) < QueueSystem.ins.queueSize * 1.5f)
+                if (Vector3.Distance(transform.position, positionInQueue) < QueueSystem.ins.queueSize * slowDistance)
                 {
                     Debug.Log("slowed");
                     agent.speed = inQueueSpeed;
