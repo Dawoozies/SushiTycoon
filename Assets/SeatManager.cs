@@ -10,8 +10,8 @@ public class SeatManager : MonoBehaviour
         ins = this;
     }
 
-    public Seat[] seats;
-    public Seat[] availableSeats;
+    [ReorderableList] public Seat[] seats;
+    [ReorderableList] public Seat[] availableSeats;
 
     // Start is called before the first frame update
     void Start()

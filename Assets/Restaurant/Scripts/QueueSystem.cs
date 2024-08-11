@@ -21,7 +21,7 @@ public class QueueSystem : MonoBehaviour
     // Stores the distance that queue positions will be from each other
     public float queueSize;
     // Stores the max length of the queue
-    public int queueCapacity;
+    [Disable] public int queueCapacity;
     // Stores the location of each position in the queue, where [0] is the start of the queue
     public Vector3[] queuePosition;
 

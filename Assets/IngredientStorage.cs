@@ -12,6 +12,9 @@ public class IngredientStorage : MonoBehaviour
     [SerializeField] SerializedDictionary<CollectableData, int> ingredients = new();
     public void AddToStorage(CollectableData collectable, int amount)
     {
-        ingredients.TryAdd(collectable, amount);
+        if(!ingredients.TryAdd(collectable, amount))
+        {
+            ingredients[collectable] += amount;
+        }
     }
 }
