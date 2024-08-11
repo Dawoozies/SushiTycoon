@@ -26,6 +26,8 @@ public class Collectable : MonoBehaviour, ICollectable
     public CollectableData collectableData => _collectableData;
     CollectableData _collectableData;
     bool _isHeld;
+
+    SpriteLayer spriteLayer;
     public void CollectProgress(float collectSpeed)
     {
         collectProgressThisFrame = true;
@@ -76,6 +78,12 @@ public class Collectable : MonoBehaviour, ICollectable
         //for now
         Destroy(gameObject);
     }
+    public void SetSpriteLayer(int layer)
+    {
+        if (spriteLayer == null)
+            return;
+        spriteLayer.SetLayer(layer);
+    }
 }
 public interface ICollectable
 {
@@ -93,4 +101,5 @@ public interface ICollectable
     public GameObject temporaryRigidbody { get; }
     public bool isHeld { get; }
     public void ReturnToPool();
+    public void SetSpriteLayer(int layer);
 }

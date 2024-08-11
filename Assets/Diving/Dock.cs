@@ -14,7 +14,6 @@ public class Dock : MonoBehaviour
     float _workerAssignTime;
     [SerializeField, ReorderableList] Transform[] dockPoints;
     [SerializeField, ReorderableList] List<DockWorker> workers = new();
-
     private void Start()
     {
         SharedGameObjectPool.Prewarm(dockWorkerPrefab, 20);
@@ -25,12 +24,10 @@ public class Dock : MonoBehaviour
     }
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log($"{other.transform.name} entered {gameObject.name}");
+        Debug.Log($"{other.transform.name} enter {gameObject.name}");
         if (other.CompareTag("Boat"))
         {
             dockedBoat = other.transform.GetComponent<Boat>();
-            boatIsDocked = true;
-
             foreach (DockWorker worker in workers)
             {
                 worker.BoatEnterDock(dockedBoat);
@@ -42,13 +39,14 @@ public class Dock : MonoBehaviour
         Debug.Log($"{other.transform.name} exited {gameObject.name}");
         if (other.CompareTag("Boat"))
         {
-            dockedBoat = null;
-            boatIsDocked = false;
-
+            dockedBoat = other.transform.GetComponent<Boat>();
             foreach (DockWorker worker in workers)
             {
-                worker.BoatExitDock(dockedBoat);
+                worker.BoatExitDock();
             }
+
+            dockedBoat = null;
+            boatIsDocked = false;
         }
     }
     private void Update()
@@ -64,7 +62,6 @@ public class Dock : MonoBehaviour
         DockWorker dockWorker = dockWorkerPoolObj.GetComponent<DockWorker>();
         dockWorker.transform.parent = transform;
         dockWorker.transform.position = dockSpawnPoint.position + Vector3.right * Random.Range(-0.4f, 0.2f);
-        dockWorker.SetUpDockWorkerPoints(dockPoints);
         workers.Add(dockWorker);
     }
 }

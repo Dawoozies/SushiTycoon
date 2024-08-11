@@ -39,22 +39,22 @@ public class SpriteMoveFlip : MonoBehaviour
     }
     void AgentUpdate(ref Vector3 localScale)
     {
-        if (agent.velocity.x > 0)
+        if (agent.velocity.x > 0.01)
         {
             localScale.x = -1;
         }
-        if (agent.velocity.x < 0)
+        if (agent.velocity.x < -0.01)
         {
             localScale.x = 1;
         }
     }
     void RigidbodyUpdate(ref Vector3 localScale)
     {
-        if (rb.velocity.x > 0)
+        if (rb.velocity.x > 0.01)
         {
             localScale.x = -1;
         }
-        if (rb.velocity.x < 0)
+        if (rb.velocity.x < -0.01)
         {
             localScale.x = 1;
         }
