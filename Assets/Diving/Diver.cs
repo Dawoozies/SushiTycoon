@@ -119,9 +119,12 @@ public class Diver : MonoBehaviour
     {
         if (targetedCollectable != null)
             return;
-        targetedCollectable = col.transform.GetComponentInParent<ICollectable>();
-        if (targetedCollectable.collected)
+        ICollectable detectedTarget = col.transform.GetComponentInParent<ICollectable>();
+        if(detectedTarget == null)
             return;
+        if (detectedTarget.collected)
+            return;
+        targetedCollectable = detectedTarget;
         diverNavigationSystem.SetTarget(col.transform);
     }
     void OnSurfaceDetected(Collider2D col)
@@ -174,6 +177,17 @@ public class Diver : MonoBehaviour
         }
         collectionTextArgs.textLines = textLines;
         return collectionTextArgs;
+    }
+    public ICollectable TakeCollectableFromBag()
+    {
+        if(bag.Count == 0)
+        {
+            return null;
+        }
+
+        ICollectable collectable = bag[0];
+        bag.RemoveAt(0);
+        return collectable;
     }
 }
 [Serializable]
