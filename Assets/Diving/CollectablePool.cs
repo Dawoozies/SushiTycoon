@@ -2,11 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using uPools;
-public abstract class CollectablePool : ObjectPoolBase<Collectable>
+public class CollectablePool : ObjectPoolBase<Collectable>
 {
+    GameObject collectablePrefab;
+    public CollectablePool(GameObject collectablePrefab)
+    {
+        this.collectablePrefab = collectablePrefab;
+    }
     protected override Collectable CreateInstance()
     {
-        Collectable instance = new Collectable();
+        GameObject instancedObject = SharedGameObjectPool.Rent(collectablePrefab);
+        Collectable instance = instancedObject.GetComponent<Collectable>();
         return instance;
     }
     protected override void OnDestroy(Collectable instance)
@@ -17,5 +23,6 @@ public abstract class CollectablePool : ObjectPoolBase<Collectable>
     }
     protected override void OnReturn(Collectable instance)
     {
+        SharedGameObjectPool.Return(instance.gameObject);
     }
 }

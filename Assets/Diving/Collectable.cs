@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System;
 public class Collectable : MonoBehaviour, ICollectable
 {
     public bool collected => collectionProgress > collectionTime;
@@ -29,10 +30,14 @@ public class Collectable : MonoBehaviour, ICollectable
 
     SpriteLayer spriteLayer;
 
-    CollectablePool pool;
-    public void SetPool(CollectablePool pool)
+    Action collectableReturnCallback;
+    public void SetSpawnerReturnCallback(Action a)
     {
-        this.pool = pool;
+        collectableReturnCallback = a;
+    }
+    public void ReturnToSpawner()
+    {
+        collectableReturnCallback?.Invoke();
     }
     public void CollectProgress(float collectSpeed)
     {
@@ -44,9 +49,11 @@ public class Collectable : MonoBehaviour, ICollectable
         onSetCollectableData?.Invoke();
         _weight = collectableData.weight;
         collectionTime = collectableData.collectionTime;
-        GameObject entityBase = Instantiate(collectableData.entityBase, transform);
-        entityBase.transform.localPosition = Vector3.zero;
         _collectableData = collectableData;
+        collectionProgress = 0f;
+        collectProgressThisFrame = false;
+        _isHeld = false;
+        inABag = false;
     }
     public void Collect(Transform collectionParent, ref List<ICollectable> bag)
     {
@@ -61,7 +68,9 @@ public class Collectable : MonoBehaviour, ICollectable
     public void BoatCollect(Vector3 boatCollectPos)
     {
         Transform rigidBodyTransform;
-        TemporaryRigidbodyPool.ins.Request(transform, out rigidBodyTransform);
+        Vector2 boxSize = collectableData.boxColliderSize;
+        boxSize.Scale(collectableData.entityBase.transform.localScale);
+        TemporaryRigidbodyPool.ins.Request(transform, out rigidBodyTransform, boxSize);
         rigidBodyTransform.position = boatCollectPos;
         inABag = false;
 
@@ -79,10 +88,7 @@ public class Collectable : MonoBehaviour, ICollectable
         collectProgressThisFrame = false;
     }
 
-    public void ReturnToPool()
-    {
-        pool.Return(this);
-    }
+
     public void SetSpriteLayer(int layer)
     {
         if (spriteLayer == null)
@@ -105,6 +111,6 @@ public interface ICollectable
     bool beingCollected { get; }
     public GameObject temporaryRigidbody { get; }
     public bool isHeld { get; }
-    public void ReturnToPool();
+    public void ReturnToSpawner();
     public void SetSpriteLayer(int layer);
 }

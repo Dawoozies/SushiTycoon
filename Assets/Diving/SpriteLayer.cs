@@ -34,6 +34,6 @@ public class SpriteLayer : MonoBehaviour
     }
     public void SetLayer(int layer)
     {
-
+        this.layer = layer;
     }
 }

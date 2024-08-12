@@ -5,6 +5,9 @@ using UnityEngine;
 public class CollectableData : ScriptableObject
 {
     public GameObject entityBase;
+    public Sprite sprite;
+    public Vector2 boxColliderOffset;
+    public Vector2 boxColliderSize;
     public float collectionTime;
     public float weight;
 }

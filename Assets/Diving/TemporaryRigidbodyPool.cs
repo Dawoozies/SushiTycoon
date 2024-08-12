@@ -16,12 +16,22 @@ public class TemporaryRigidbodyPool : MonoBehaviour
     {
         SharedGameObjectPool.Prewarm(prefab, 20);
     }
-    public void Request(Transform objToGiveRigidbody, out Transform rigidBodyTransform)
+    public void Request(Transform objToGiveRigidbody, out Transform rigidbodyTransform)
     {
         GameObject poolObj = SharedGameObjectPool.Rent(prefab);
         objToGiveRigidbody.SetParent(poolObj.transform, false);
         objToGiveRigidbody.localPosition = Vector3.zero;
-        rigidBodyTransform = poolObj.transform;
+        rigidbodyTransform = poolObj.transform;
+    }
+    public void Request(Transform objToGiveRigidbody, out Transform rigidbodyTransform, Vector2 boxColliderSize)
+    {
+        GameObject poolObj = SharedGameObjectPool.Rent(prefab);
+        objToGiveRigidbody.SetParent(poolObj.transform, false);
+        objToGiveRigidbody.localPosition = Vector3.zero;
+        rigidbodyTransform = poolObj.transform;
+
+        BoxCollider2D boxCollider = rigidbodyTransform.GetComponent<BoxCollider2D>();
+        boxCollider.size = boxColliderSize;
     }
     public void Return(GameObject insToReturn)
     {

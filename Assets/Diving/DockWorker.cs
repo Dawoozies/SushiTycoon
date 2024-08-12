@@ -78,7 +78,7 @@ public class DockWorker : MonoBehaviour
         if (holdingSomething)
         {
             IngredientStorage.ins.AddToStorage(heldCollectable.collectableData, 1);
-            heldCollectable.ReturnToPool();
+            heldCollectable.ReturnToSpawner();
             heldCollectable = null;
             holdingSomething = false;
             currentTask = DockWorkerTask.Idle;

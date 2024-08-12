@@ -10,6 +10,7 @@ public class TriggerVolumeEvents : MonoBehaviour
     public List<Action<Collider2D>> onEnterActions = new();
     public List<Action<Collider2D>> onStayActions = new();
     public List<Action<Collider2D>> onExitActions = new();
+    [SerializeField] bool debugging;
     public void RegisterCollisionCallback(Action<Collider2D> a, CollisionEventType evtType)
     {
         switch (evtType)
@@ -27,7 +28,10 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.LogError(other.name + "Enter");
+        if(debugging)
+        {
+            Debug.Log($"{transform.name} detected {other.name} Enter");
+        }
         if (!CheckValidTag(other))
             return;
         foreach (var a in onEnterActions)
@@ -37,7 +41,10 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerStay2D(Collider2D other)
     {
-        Debug.LogError($"{transform.name} detected {other.name} Stay");
+        if(debugging)
+        {
+            Debug.Log($"{transform.name} detected {other.name} Stay");
+        }
         if (!CheckValidTag(other))
             return;
         foreach (var a in onStayActions)
@@ -47,7 +54,10 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerExit2D(Collider2D other)
     {
-        Debug.LogError(other.name + "Exit");
+        if (debugging)
+        {
+            Debug.Log($"{transform.name} detected {other.name} Exit");
+        }
         if (!CheckValidTag(other))
             return;
         foreach (var a in onExitActions)

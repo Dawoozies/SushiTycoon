@@ -13,18 +13,19 @@ public class Dock : MonoBehaviour
     [SerializeField] float workerAssignTime;
     float _workerAssignTime;
     [SerializeField, ReorderableList] Transform[] dockPoints;
+    public int workerCount;
     [SerializeField, ReorderableList] List<DockWorker> workers = new();
     private void Start()
     {
         SharedGameObjectPool.Prewarm(dockWorkerPrefab, 20);
-        for (int i = 0; i < 3; i++) 
+        for (int i = 0; i < workerCount; i++) 
         {
             AddNewDockWorker();
         }
     }
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log($"{other.transform.name} enter {gameObject.name}");
+        //Debug.Log($"{other.transform.name} enter {gameObject.name}");
         if (other.CompareTag("Boat"))
         {
             dockedBoat = other.transform.GetComponent<Boat>();
@@ -36,7 +37,7 @@ public class Dock : MonoBehaviour
     }
     private void OnTriggerExit2D(Collider2D other)
     {
-        Debug.Log($"{other.transform.name} exited {gameObject.name}");
+        //Debug.Log($"{other.transform.name} exited {gameObject.name}");
         if (other.CompareTag("Boat"))
         {
             dockedBoat = other.transform.GetComponent<Boat>();
