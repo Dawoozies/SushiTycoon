@@ -7,6 +7,12 @@ public class TargetNavigator : Navigator
 {
     [SerializeField] Transform target;
     public bool hasTarget;
+    float originalSpeed;
+    protected override void Start()
+    {
+        base.Start();
+        originalSpeed = agent.speed;
+    }
     public void ClearTarget()
     {
         target = null;
@@ -33,6 +39,7 @@ public class TargetNavigator : Navigator
     {
         if (!movementAllowed || !isActiveNavigator || !hasTarget)
             return;
+        agent.speed = originalSpeed;
         Vector3 p = target.position;
         NavMeshHit hit;
         if(NavMesh.SamplePosition(p, out hit, 5f, NavMesh.AllAreas))

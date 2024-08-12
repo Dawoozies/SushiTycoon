@@ -6,7 +6,7 @@ using Random = UnityEngine.Random;
 public class DockWorker : MonoBehaviour
 {
     ICollectable heldCollectable;
-    bool holdingSomething;
+    [SerializeField]bool holdingSomething;
     public DockWorkerTask currentTask;
     [SerializeField] Transform holdPoint;
     [SerializeField, ReorderableList] GameObject[] arms;
@@ -15,23 +15,30 @@ public class DockWorker : MonoBehaviour
     Boat boat;
     bool boatDocked;
 
-    [SerializeField] TriggerVolumeEvents detectionEvents;
+    [SerializeField] TriggerVolumeEvents boatDetectionEvents;
+    [SerializeField] TriggerVolumeEvents itemDropOffDetectionEvents;
     private void Start()
     {
         navigation = GetComponent<Navigation>();
-        detectionEvents.RegisterCollisionCallback(AtBoat, CollisionEventType.Stay);
-        detectionEvents.RegisterCollisionCallback(AtItemDropOff, CollisionEventType.Stay);
+        boatDetectionEvents.RegisterCollisionCallback(AtBoat, CollisionEventType.Stay);
+        itemDropOffDetectionEvents.RegisterCollisionCallback(AtItemDropOff, CollisionEventType.Stay);
     }
     private void Update()
     {
         SetActiveArms(holdingSomething ? 1 : 0);
-        if(currentTask == DockWorkerTask.Idle && boatDocked)
+        if(currentTask == DockWorkerTask.Idle && boatDocked && boat.CollectablesOnBoat() > 0)
         {
             currentTask = DockWorkerTask.Boat;
             navigation.SetTarget(boat.transform);
         }
-        if(!boatDocked)
+        if(!holdingSomething && currentTask == DockWorkerTask.Boat && boatDocked && boat.CollectablesOnBoat() == 0)
         {
+            currentTask = DockWorkerTask.Idle;
+            navigation.ClearTarget();
+        }
+        if(!holdingSomething && currentTask == DockWorkerTask.Boat && !boatDocked)
+        {
+            currentTask = DockWorkerTask.Idle;
             navigation.ClearTarget();
         }
         navigation.SetActiveNavigator((int)currentTask);
@@ -55,33 +62,26 @@ public class DockWorker : MonoBehaviour
     }
     void AtBoat(Collider2D other)
     {
-        if(other.CompareTag("Boat"))
+        if (boatDocked && currentTask == DockWorkerTask.Boat)
         {
-            if (boatDocked && currentTask == DockWorkerTask.Boat)
+            heldCollectable = boat.TakeCollectableFromBoat();
+            if (heldCollectable != null)
             {
-                heldCollectable = boat.TakeCollectableFromBoat();
-                if (heldCollectable != null)
-                {
-                    heldCollectable.DockWorkerCollect(holdPoint);
-                    holdingSomething = true;
-                    currentTask = DockWorkerTask.ItemDropOff;
-                }
+                heldCollectable.DockWorkerCollect(holdPoint);
+                holdingSomething = true;
+                currentTask = DockWorkerTask.ItemDropOff;
             }
         }
-
     }
     void AtItemDropOff(Collider2D other)
     {
-        if(other.CompareTag("ItemDropOff"))
+        if (holdingSomething)
         {
-            if (holdingSomething)
-            {
-                IngredientStorage.ins.AddToStorage(heldCollectable.collectableData, 1);
-                heldCollectable.ReturnToPool();
-                heldCollectable = null;
-                holdingSomething = false;
-                currentTask = DockWorkerTask.Idle;
-            }
+            IngredientStorage.ins.AddToStorage(heldCollectable.collectableData, 1);
+            heldCollectable.ReturnToPool();
+            heldCollectable = null;
+            holdingSomething = false;
+            currentTask = DockWorkerTask.Idle;
         }
     }
 }

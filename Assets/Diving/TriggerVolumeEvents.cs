@@ -37,7 +37,7 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerStay2D(Collider2D other)
     {
-        Debug.LogError(other.name + "Stay");
+        Debug.LogError($"{transform.name} detected {other.name} Stay");
         if (!CheckValidTag(other))
             return;
         foreach (var a in onStayActions)

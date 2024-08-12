@@ -13,6 +13,7 @@ using UnityEngine.AI;
 public abstract class Navigator : MonoBehaviour, INavigator
 {
     protected NavMeshAgent agent;
+    [SerializeField] protected NavMeshAreas allowedAreas;
     public Vector3 destination;
     protected NavMeshPathStatus pathStatus;
     public bool hasPath;

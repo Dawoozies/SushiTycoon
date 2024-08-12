@@ -23,4 +23,8 @@ public class MainCamera : MonoBehaviour
         worldPos.z = 0f;
         return worldPos;
     }
+    private void Update()
+    {
+        //click and drag?
+    }
 }

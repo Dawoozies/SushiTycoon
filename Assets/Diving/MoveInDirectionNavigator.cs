@@ -5,13 +5,19 @@ using UnityEngine.AI;
 public class MoveInDirectionNavigator : Navigator
 {
     [SerializeField] Vector3 moveDirection;
+    float originalSpeed;
+    protected override void Start()
+    {
+        base.Start();
+        originalSpeed = agent.speed;
+    }
     public override void Navigate()
     {
         if (!movementAllowed || !isActiveNavigator)
             return;
         Vector3 p = transform.position + moveDirection;
         NavMeshHit hit;
-        if(NavMesh.SamplePosition(p, out hit, 5f, NavMesh.AllAreas))
+        if(NavMesh.SamplePosition(p, out hit, 5f, (int)allowedAreas))
         {
             NavMeshPath path = new NavMeshPath();
             agent.CalculatePath(hit.position, path);
