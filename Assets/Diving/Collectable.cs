@@ -28,6 +28,12 @@ public class Collectable : MonoBehaviour, ICollectable
     bool _isHeld;
 
     SpriteLayer spriteLayer;
+
+    CollectablePool pool;
+    public void SetPool(CollectablePool pool)
+    {
+        this.pool = pool;
+    }
     public void CollectProgress(float collectSpeed)
     {
         collectProgressThisFrame = true;
@@ -75,8 +81,7 @@ public class Collectable : MonoBehaviour, ICollectable
 
     public void ReturnToPool()
     {
-        //for now
-        Destroy(gameObject);
+        pool.Return(this);
     }
     public void SetSpriteLayer(int layer)
     {
