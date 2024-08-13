@@ -1,6 +1,7 @@
 using LitMotion;
 using UnityEngine;
-public class CollectionPanelMotion : MonoBehaviour
+using System;
+public class CanvasPanelMotion : MonoBehaviour
 {
     [SerializeField] float timeDeltaMultiplier;
     [SerializeField] float panelOpenTime = 1f;
@@ -17,7 +18,7 @@ public class CollectionPanelMotion : MonoBehaviour
     [Disable] public bool open;
     [Disable] public bool openMotionActive;
     [Disable] public bool closeMotionActive;
-    void DoOpenMotion()
+    public void DoOpenMotion()
     {
         var openHandlePos = LMotion.Create(rectTransformStateClosed.localPosition, rectTransformStateOpen.localPosition, panelOpenTime)
             .WithEase(openEasing)
@@ -34,18 +35,38 @@ public class CollectionPanelMotion : MonoBehaviour
 
         open = true;
     }
-    void DoCloseMotion()
+    public void DoCloseMotion()
     {
         var closeHandlePos = LMotion.Create(rectTransformStateOpen.localPosition, rectTransformStateClosed.localPosition, panelCloseTime)
             .WithEase(closeEasing)
             .Bind(x => rectTransform.localPosition = x)
             .AddTo(closeHandles);
         var closeHandleWidth = LMotion.Create(rectTransformStateOpen.rect.width, rectTransformStateClosed.rect.width, panelCloseTime)
-            .WithEase(closeEasing)   
+            .WithEase(closeEasing)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, x))
             .AddTo(closeHandles);
         var closeHandleHeight = LMotion.Create(rectTransformStateOpen.rect.height, rectTransformStateClosed.rect.height, panelCloseTime)
             .WithEase(closeEasing)
+            .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x))
+            .AddTo(closeHandles);
+
+        open = false;
+    }
+    public void DoCloseMotion(Action onCompleteCallback)
+    {
+        var closeHandlePos = LMotion.Create(rectTransformStateOpen.localPosition, rectTransformStateClosed.localPosition, panelCloseTime)
+            .WithEase(closeEasing)
+            .WithOnComplete(onCompleteCallback)
+            .Bind(x => rectTransform.localPosition = x)
+            .AddTo(closeHandles);
+        var closeHandleWidth = LMotion.Create(rectTransformStateOpen.rect.width, rectTransformStateClosed.rect.width, panelCloseTime)
+            .WithEase(closeEasing)   
+            .WithOnComplete(onCompleteCallback)
+            .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, x))
+            .AddTo(closeHandles);
+        var closeHandleHeight = LMotion.Create(rectTransformStateOpen.rect.height, rectTransformStateClosed.rect.height, panelCloseTime)
+            .WithEase(closeEasing)
+            .WithOnComplete(onCompleteCallback)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x))
             .AddTo(closeHandles);
 
@@ -83,5 +104,13 @@ public class CollectionPanelMotion : MonoBehaviour
             }
             doMotion = false;
         }
+    }
+    public void SetRectangleSize(Vector2 openSize, Vector2 closeSize)
+    {
+        rectTransformStateOpen.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, openSize.x);
+        rectTransformStateOpen.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, openSize.y);
+
+        rectTransformStateClosed.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, closeSize.x);
+        rectTransformStateClosed.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, closeSize.y);
     }
 }
