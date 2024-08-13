@@ -12,84 +12,113 @@ public class CanvasPanelMotion : MonoBehaviour
     [SerializeField] RectTransform rectTransformStateClosed;
     [SerializeField] RectTransform rectTransformStateOpen;
 
-    CompositeMotionHandle openHandles = new CompositeMotionHandle();
-    CompositeMotionHandle closeHandles = new CompositeMotionHandle();
+    MotionHandle[] openHandles;
+    bool openHandlesInitialized;
+    MotionHandle[] closeHandles;
+    bool closeHandlesInitialized;
     public bool doMotion;
     [Disable] public bool open;
     [Disable] public bool openMotionActive;
     [Disable] public bool closeMotionActive;
+    void Start()
+    {
+    }
     public void DoOpenMotion()
     {
+        openHandles = new MotionHandle[3];
+        openHandlesInitialized = true;
         var openHandlePos = LMotion.Create(rectTransformStateClosed.localPosition, rectTransformStateOpen.localPosition, panelOpenTime)
             .WithEase(openEasing)
             .Bind(x => rectTransform.localPosition = x)
-            .AddTo(openHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
         var openHandleWidth = LMotion.Create(rectTransformStateClosed.rect.width, rectTransformStateOpen.rect.width, panelOpenTime)
             .WithEase(openEasing)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, x))
-            .AddTo(openHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
         var openHandleHeight = LMotion.Create(rectTransformStateClosed.rect.height, rectTransformStateOpen.rect.height, panelOpenTime)
             .WithEase(openEasing)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x))
-            .AddTo(openHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
+
+        openHandles[0] = openHandlePos;
+        openHandles[1] = openHandleWidth;
+        openHandles[2] = openHandleHeight;
 
         open = true;
     }
     public void DoCloseMotion()
     {
+        closeHandles = new MotionHandle[3];
+        closeHandlesInitialized = true;
         var closeHandlePos = LMotion.Create(rectTransformStateOpen.localPosition, rectTransformStateClosed.localPosition, panelCloseTime)
             .WithEase(closeEasing)
             .Bind(x => rectTransform.localPosition = x)
-            .AddTo(closeHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
         var closeHandleWidth = LMotion.Create(rectTransformStateOpen.rect.width, rectTransformStateClosed.rect.width, panelCloseTime)
             .WithEase(closeEasing)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, x))
-            .AddTo(closeHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
         var closeHandleHeight = LMotion.Create(rectTransformStateOpen.rect.height, rectTransformStateClosed.rect.height, panelCloseTime)
             .WithEase(closeEasing)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x))
-            .AddTo(closeHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
+
+        closeHandles[0] = closeHandlePos;
+        closeHandles[1] = closeHandleWidth;
+        closeHandles[2] = closeHandleHeight;
 
         open = false;
     }
     public void DoCloseMotion(Action onCompleteCallback)
     {
+        closeHandles = new MotionHandle[3];
+        closeHandlesInitialized = true;
         var closeHandlePos = LMotion.Create(rectTransformStateOpen.localPosition, rectTransformStateClosed.localPosition, panelCloseTime)
             .WithEase(closeEasing)
             .WithOnComplete(onCompleteCallback)
             .Bind(x => rectTransform.localPosition = x)
-            .AddTo(closeHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
         var closeHandleWidth = LMotion.Create(rectTransformStateOpen.rect.width, rectTransformStateClosed.rect.width, panelCloseTime)
             .WithEase(closeEasing)   
             .WithOnComplete(onCompleteCallback)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, x))
-            .AddTo(closeHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
         var closeHandleHeight = LMotion.Create(rectTransformStateOpen.rect.height, rectTransformStateClosed.rect.height, panelCloseTime)
             .WithEase(closeEasing)
             .WithOnComplete(onCompleteCallback)
             .Bind(x => rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x))
-            .AddTo(closeHandles);
+            .AddTo(gameObject, LinkBehaviour.CancelOnDisable);
+
+        closeHandles[0] = closeHandlePos;
+        closeHandles[1] = closeHandleWidth;
+        closeHandles[2] = closeHandleHeight;
 
         open = false;
     }
     void Update()
     {
         openMotionActive = false;
-        foreach (var handle in openHandles)
+        if(openHandlesInitialized)
         {
-            if(handle.IsActive())
+            foreach (var handle in openHandles)
             {
-                openMotionActive = true;
-                break;
+                if (handle.IsActive())
+                {
+                    openMotionActive = true;
+                    break;
+                }
             }
         }
         closeMotionActive = false;
-        foreach (var handle in closeHandles)
+        if(closeHandlesInitialized)
         {
-            if(handle.IsActive())
+            foreach (var handle in closeHandles)
             {
-                closeMotionActive = true;
-                break;
+                if (handle.IsActive())
+                {
+                    closeMotionActive = true;
+                    break;
+                }
             }
         }
         if (doMotion && !openMotionActive && !closeMotionActive)

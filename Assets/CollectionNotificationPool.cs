@@ -23,6 +23,7 @@ public class CollectionNotificationPool : MonoBehaviour
         if(poolObj.TryGetComponent(out notification))
         {
             notification.TriggerNotification(collectable);
+            poolObj.transform.SetAsFirstSibling();
         }
     }
 }
