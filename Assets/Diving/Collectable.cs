@@ -41,6 +41,8 @@ public class Collectable : MonoBehaviour, ICollectable
     }
     public void ReturnToSpawner()
     {
+        Debug.Log($"Collecting {collectableData.name}");
+        CollectionNotificationPool.ins.Request(_collectableData);
         collectableReturnCallback?.Invoke();
     }
     public void CollectProgress(float collectSpeed)

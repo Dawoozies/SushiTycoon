@@ -10,4 +10,5 @@ public class CollectableData : ScriptableObject
     public Vector2 boxColliderSize;
     public float collectionTime;
     public float weight;
+    public int rank;
 }
