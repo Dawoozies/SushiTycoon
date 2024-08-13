@@ -66,10 +66,8 @@ public class CustomerNavigationSystem : NavigationSystem
                 //placeInQueue 
 
                 positionInQueue = QueueSystem.ins.JoinQueue(placeInQueue, out int newPosition);
-                Debug.Log("queuePosition: " + newPosition);
                 if (Vector3.Distance(transform.position, positionInQueue) < QueueSystem.ins.queueSize * slowDistance)
                 {
-                    Debug.Log("slowed");
                     agent.speed = inQueueSpeed;
                 } else
                 {
@@ -81,21 +79,36 @@ public class CustomerNavigationSystem : NavigationSystem
                 break;
             case CustomerTask.TakingSeat:
                 // Make sure customer isn't still slowed from queue
-                QueueSystem.ins.positionOccupied[placeInQueue] = false;
-                placeInQueue = -1;
-                agent.speed = customerSpeedFull;
-
+                if (placeInQueue >= 0)
+                {
+                    QueueSystem.ins.positionOccupied[placeInQueue] = false;
+                    placeInQueue = -1;
+                    agent.speed = customerSpeedFull;
+                    seatPosition = seat.transform.position;
+                    pointNavigator.SetPoint(seatPosition);
+                }
+                //If at seat, switch to Seated state
+                Debug.Log(Vector3.Distance(transform.position, seatPosition));
+                if (Vector3.Distance(transform.position, seatPosition) < SeatingParameters.ins.SeatingDistance)
+                {
+                    currentTask = CustomerTask.Seated;
+                }
                 // find and set seatPosition
-                seatPosition = seat.transform.position;
-
-                pointNavigator.SetPoint(seatPosition);
                 break;
             case CustomerTask.Seated:
                 pointNavigator.SetPoint(seatPosition);
+                seat.isSeated = true;
                 break;
             case CustomerTask.Leaving:
+
+                if(seat != null)
+                {
+                    seat.LeaveSeat();
+                    seat = null;
+
+                }
                 // Make sure customer isn't still slowed from queue
-                if(placeInQueue >= 0)
+                if (placeInQueue >= 0)
                 {
                     QueueSystem.ins.positionOccupied[placeInQueue] = false;
 
@@ -115,7 +128,9 @@ public class CustomerNavigationSystem : NavigationSystem
     {
         if(currentTask == CustomerTask.Leaving)
         {
-            QueueSystem.ins.positionOccupied[placeInQueue] = false;
+            if (placeInQueue >= 0) QueueSystem.ins.positionOccupied[placeInQueue] = false;
+
+
 
         }
     }

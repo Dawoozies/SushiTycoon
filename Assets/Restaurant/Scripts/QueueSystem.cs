@@ -46,8 +46,6 @@ public class QueueSystem : MonoBehaviour
 
         //Creates room for queue to snake around to next line
         queueLength = new int[rowLength, columnLength * 2 - 1];
-        Debug.Log("Length 0 " + queueLength.GetLength(0));
-        Debug.Log(queueLength.GetLength(1));
 
         // Tracks position in queue for mapping coordinates
         int position = 0;
