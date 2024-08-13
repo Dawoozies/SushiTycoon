@@ -5,6 +5,8 @@ using UnityEngine.Events;
 using System;
 public class Collectable : MonoBehaviour, ICollectable
 {
+    public SpriteRenderer spriteRenderer;
+    public BoxCollider2D boxCollider;
     public bool collected => collectionProgress > collectionTime;
     public Vector2 position => transform.position;
     public float weight => _weight;
@@ -31,6 +33,8 @@ public class Collectable : MonoBehaviour, ICollectable
     SpriteLayer spriteLayer;
 
     Action collectableReturnCallback;
+
+
     public void SetSpawnerReturnCallback(Action a)
     {
         collectableReturnCallback = a;
@@ -54,6 +58,10 @@ public class Collectable : MonoBehaviour, ICollectable
         collectProgressThisFrame = false;
         _isHeld = false;
         inABag = false;
+
+        spriteRenderer.sprite = collectableData.sprite;
+        boxCollider.offset = collectableData.boxColliderOffset;
+        boxCollider.size = collectableData.boxColliderSize;
     }
     public void Collect(Transform collectionParent, ref List<ICollectable> bag)
     {

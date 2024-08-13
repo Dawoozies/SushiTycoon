@@ -32,17 +32,11 @@ public class CollectableSpawner : MonoBehaviour
             {
                 CollectableData collectableData = initialSpawnPoint.RandomCollectableData();
                 GameObject collectableMainObject = SharedGameObjectPool.Rent(prefab);
-
                 collectableMainObject.transform.position = initialSpawnPoint.RandomNavMeshPosition();
-
-                GameObject collectablePrefabClone = SharedGameObjectPool.Rent(collectableData.entityBase);
-                collectablePrefabClone.transform.parent = collectableMainObject.transform;
-                collectablePrefabClone.transform.localPosition = Vector3.zero;
                 Collectable collectable = collectableMainObject.GetComponent<Collectable>();
                 collectable.SetCollectableData(collectableData);
                 collectable.SetSpawnerReturnCallback(() => {
                     collectableMainObject.transform.parent = null;
-                    SharedGameObjectPool.Return(collectablePrefabClone);
                     SharedGameObjectPool.Return(collectableMainObject);
                     inactiveCollectables++;
                     activeCollectables--;
@@ -82,14 +76,10 @@ public class CollectableSpawner : MonoBehaviour
         CollectableData collectableData = respawnPoint.RandomCollectableData();
         GameObject collectableMainObject = SharedGameObjectPool.Rent(prefab);
         collectableMainObject.transform.position = respawnPoint.RandomNavMeshPosition();
-        GameObject collectablePrefabClone = SharedGameObjectPool.Rent(collectableData.entityBase);
-        collectablePrefabClone.transform.parent = collectableMainObject.transform;
-        collectablePrefabClone.transform.localPosition = Vector3.zero;
         Collectable collectable = collectableMainObject.GetComponent<Collectable>();
         collectable.SetCollectableData(collectableData);
         collectable.SetSpawnerReturnCallback(() => {
             collectableMainObject.transform.parent = null;
-            SharedGameObjectPool.Return(collectablePrefabClone);
             SharedGameObjectPool.Return(collectableMainObject);
             inactiveCollectables++;
             activeCollectables++;
