@@ -6,6 +6,14 @@ public class MainCamera : MonoBehaviour
 {
     public static MainCamera ins;
     Camera c;
+    public Vector2 mouseScreenPos;
+    public Vector2 mouseWorldPos;
+    public Vector2 mouseDelta;
+    public Vector2 mouseScrollDelta;
+    bool middleMouse;
+    public Vector2 orthographicSizeBounds;
+    public float cameraMoveSensitivity;
+    public AnimationCurve cameraMoveSensitivityCurve;
     private void Awake()
     {
         ins = this;
@@ -26,5 +34,35 @@ public class MainCamera : MonoBehaviour
     private void Update()
     {
         //click and drag?
+        mouseScreenPos = Input.mousePosition;
+        mouseWorldPos = c.ScreenToWorldPoint(mouseScreenPos);
+        mouseDelta.x = Input.GetAxis("Mouse X");
+        mouseDelta.y = Input.GetAxis("Mouse Y");
+        mouseScrollDelta = Input.mouseScrollDelta;
+
+        if (Input.GetMouseButtonDown(2))
+        {
+            middleMouse = true;
+        }
+        if(Input.GetMouseButtonUp(2))
+        {
+            middleMouse = false;
+        }
+
+        CameraMovement();
+        CameraZoom();
+    }
+    void CameraMovement()
+    {
+        if(!middleMouse)
+        {
+            return;
+        }
+        transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, c.orthographicSize))));
+    }
+    void CameraZoom()
+    {
+        c.orthographicSize -= mouseScrollDelta.y;
+        c.orthographicSize = Mathf.Clamp(c.orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
     }
 }

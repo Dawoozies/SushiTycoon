@@ -5,12 +5,22 @@ using UnityEngine.UI;
 using uPools;
 public class CanvasObject : MonoBehaviour, IPoolCallbackReceiver
 {
+    [SerializeField] bool worldCanvas;
     RectTransform rectTransform;
     public Vector3 position { 
         get {
+            if(worldCanvas)
+            {
+                return rectTransform.localPosition;
+            }
             return MainCamera.ins.ScreenToWorldSpace(rectTransform.localPosition);
         }
         set { 
+            if(worldCanvas)
+            {
+                rectTransform.position = value;
+                return;
+            }
             rectTransform.position = MainCamera.ins.WorldToScreenSpace(value);
         } 
     }
