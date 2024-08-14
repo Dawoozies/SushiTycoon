@@ -57,7 +57,7 @@ public class WaiterNavigator : NavigationSystem
                     currentTask = WaiterTask.Idle;
                     break;
                 }
-                atSeat = Vector2.Distance(transform.position, seat.transform.position) < SeatingParameters.ins.SeatingDistance;
+                atSeat = Vector2.Distance(transform.position, seat.transform.position) < RestaurantParameters.ins.SeatingDistance;
                 if(atSeat)
                 {
                     bool seatCleaned = seat.CleanSeat();

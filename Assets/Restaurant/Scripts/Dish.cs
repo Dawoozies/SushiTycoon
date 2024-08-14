@@ -4,27 +4,25 @@ using System.Collections.Generic;
 using UnityEngine;
 public class Dish : MonoBehaviour, IDish
 {
-
-    public DishState currentState;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        currentState = DishState.Empty;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-    }
-
-    public DishState state { get; }
+    public DishState state => _state;
     private DishState _state;
+    public DishData dishData => _dishData;
+    private DishData _dishData;
+
+    private PreperationStage prepStage;
+    public void SetDishData(DishData dishData)
+    {
+        _dishData = dishData;
+        _state = DishState.Empty;
+    }
 }
 
 public interface IDish
 {
     public DishState state { get; }
+    public DishData dishData { get; }
+
+    public void SetDishData(DishData dishData);
 }
 
 [Serializable]

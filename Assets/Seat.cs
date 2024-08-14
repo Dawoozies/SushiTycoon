@@ -28,7 +28,7 @@ public class Seat : MonoBehaviour
         isDirty = false;
         isSeated = false;
         dirt = gameObject.transform.GetChild(0).gameObject;
-        dirtPosition = transform.position + SeatingDirectionToVector() * SeatingParameters.ins.SeatingDistance;
+        dirtPosition = transform.position + SeatingDirectionToVector() * RestaurantParameters.ins.SeatingDistance;
         dirt.transform.position = dirtPosition;
     }
 
@@ -90,7 +90,7 @@ public class Seat : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, transform.position + SeatingDirectionToVector() * SeatingParameters.ins.SeatingDistance);
+        Gizmos.DrawLine(transform.position, transform.position + SeatingDirectionToVector() * RestaurantParameters.ins.SeatingDistance);
     }
     Vector3 SeatingDirectionToVector()
     {

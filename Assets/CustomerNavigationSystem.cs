@@ -17,12 +17,10 @@ public class CustomerNavigationSystem : NavigationSystem
     PointNavigator pointNavigator;
     NavMeshAgent agent;
     Seat seat;
+    private Customer customer;
     float customerSpeedFull;
     public float inQueueSpeed;
     public float slowDistance;
-
-    public float queuePatience;
-
     protected override void Start()
     {
         base.Start();
@@ -34,7 +32,7 @@ public class CustomerNavigationSystem : NavigationSystem
         customerSpeedFull = agent.speed;
         inQueueSpeed = customerSpeedFull / 8f;
         slowDistance = 2f;
-        queuePatience = UnityEngine.Random.Range(10, 120); // Low numbers just for testing. Tweak
+        customer = GetComponent<Customer>();
     }
     protected override void Update()
     {
@@ -50,8 +48,9 @@ public class CustomerNavigationSystem : NavigationSystem
         switch (currentTask)
         {
             case CustomerTask.Queueing:
-                queuePatience -= Time.deltaTime;
-                if (queuePatience < 0) currentTask = CustomerTask.Leaving;
+                customer.patience -= Time.deltaTime;
+                if(customer.satisfactionDecayable) customer.satisfaction -= customer.satisfactionDecay * Time.deltaTime;
+                if (customer.patience <= 0) currentTask = CustomerTask.Leaving;
 
                 if(placeInQueue == 0)
                 {
@@ -88,8 +87,7 @@ public class CustomerNavigationSystem : NavigationSystem
                     pointNavigator.SetPoint(seatPosition);
                 }
                 //If at seat, switch to Seated state
-                Debug.Log(Vector3.Distance(transform.position, seatPosition));
-                if (Vector3.Distance(transform.position, seatPosition) < SeatingParameters.ins.SeatingDistance)
+                if (Vector3.Distance(transform.position, seatPosition) < RestaurantParameters.ins.SeatingDistance)
                 {
                     currentTask = CustomerTask.Seated;
                 }
