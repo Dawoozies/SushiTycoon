@@ -7,7 +7,7 @@ public class CustomerNavigationSystem : NavigationSystem
 {
     //getting place in the queue
     //is entering restaurant
-   [SerializeField] Vector3 positionInQueue;
+    [SerializeField] Vector3 positionInQueue;
     [SerializeField] int placeInQueue;
     Vector3 seatPosition;
     [SerializeField] public Vector3 despawnAreaPosition;
