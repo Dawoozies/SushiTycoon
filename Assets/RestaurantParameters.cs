@@ -13,12 +13,21 @@ public class RestaurantParameters : MonoBehaviour
 
     public float SeatingDistance;
     public Vector2 PatienceBounds;
-    public List<DishData> Menu;
     public float CustomerSatisfactionDecay = 0.004f;
     public float CustomerEnterRestaurantCheckTime = 2f;
     public float CustomerEnterRestaurantChance;
+    public Vector2 CustomerOrderTimeBounds;
+    public GameObject OrderPrefab;
+    public GameObject DishPrefab;
+    public LayerMask BuildingLayerMask;
+    public float ValidOrderTakingDistance = 0.75f;
+    public List<DishData> Menu;
     public DishData GetRandomMenuItem()
     {
         return Menu[Random.Range(0, Menu.Count)];
+    }
+    public float GetRandomOrderingTime()
+    {
+        return Random.Range(CustomerOrderTimeBounds.x, CustomerOrderTimeBounds.y);
     }
 }

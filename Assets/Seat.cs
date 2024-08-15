@@ -13,7 +13,7 @@ public class Seat : MonoBehaviour
     Vector2 seatDirection;
     GameObject dirt;
     public Vector3 dirtPosition;
-    public WaiterNavigator taskedWaiter;
+    public Waiter taskedWaiter;
     bool hasTaskedWaiter;
     public float dirtAmount;
     [Serializable] public enum SeatingDirection
@@ -21,7 +21,7 @@ public class Seat : MonoBehaviour
         Left, Right, Up, Down
     }
 
-    // Start is called before the first frame update
+    Customer assignedCustomer;
     void Start()
     {
         isOccupied = false;
@@ -50,12 +50,16 @@ public class Seat : MonoBehaviour
         return dirtPosition;
     }
 
-    public void LeaveSeat()
+    public void LeaveSeat(Customer customer)
     {
-        isSeated = false;
-        isOccupied = false;
-        isDirty = true;
-        dirtAmount = 1;
+        if(assignedCustomer == customer)
+        {
+            isSeated = false;
+            isOccupied = false;
+            isDirty = true;
+            dirtAmount = 1;
+            assignedCustomer = null;
+        }
     }
 
     public bool CleanSeat()
@@ -70,7 +74,7 @@ public class Seat : MonoBehaviour
         isDirty = false;
         return true;
     }
-    public bool TryTaskWaiter(WaiterNavigator waiter)
+    public bool TryTaskWaiter(Waiter waiter)
     {
         if (hasTaskedWaiter)
             return false;
@@ -79,7 +83,7 @@ public class Seat : MonoBehaviour
         hasTaskedWaiter = true;
         return true;
     }
-    public void ClearTaskWaiter(WaiterNavigator waiter)
+    public void ClearTaskWaiter(Waiter waiter)
     {
         if(taskedWaiter == waiter)
         {
@@ -89,6 +93,8 @@ public class Seat : MonoBehaviour
     }
     private void OnDrawGizmosSelected()
     {
+        if (!Application.isPlaying)
+            return;
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + SeatingDirectionToVector() * RestaurantParameters.ins.SeatingDistance);
     }
@@ -107,5 +113,19 @@ public class Seat : MonoBehaviour
         }
         return Vector3.zero;
     }
-
+    public void AddToSeatsList()
+    {
+        SeatManager.ins.AddSeat(this);
+    }
+    public void RemoveFromSeatsList()
+    {
+        SeatManager.ins.RemoveSeat(this);
+    }
+    public bool TryCustomerSeat(Customer customer)
+    {
+        if (assignedCustomer != null)
+            return false;
+        assignedCustomer = customer;
+        return true;
+    }
 }

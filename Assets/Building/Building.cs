@@ -19,6 +19,8 @@ public class Building : MonoBehaviour
     OnBuildingEvents onBuildingEvents;
     Action<Vector2> whileNotBuilt;
     Action onBuild;
+
+    bool builtThisFrame;
     void Start()
     {
         navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
@@ -30,14 +32,12 @@ public class Building : MonoBehaviour
 
         if (selectedForBuild == null)
             return;
-
         bool canBuild = true;
         if (onBuildingEvents != null)
         {
             canBuild = !onBuildingEvents.BuildingOverlapCheck();
             onBuildingEvents.ChangeColorTint(canBuild ? selectedForBuildColorTint : selectedForBuildOverlapColorTint);
         }
-
         if(Input.GetMouseButtonDown(0) && canBuild)
         {
             onBuild?.Invoke();
@@ -49,11 +49,20 @@ public class Building : MonoBehaviour
             whileNotBuilt = null;
 
             SelectForBuild(prefab);
+
+            builtThisFrame = true;
             return;
         }
 
         whileNotBuilt?.Invoke(mouseWorldPos);
-        navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
+    }
+    void LateUpdate()
+    {
+        if(builtThisFrame)
+        {
+            navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
+            builtThisFrame = false;
+        }
     }
     public void SelectForBuild(GameObject prefabToBuild)
     {

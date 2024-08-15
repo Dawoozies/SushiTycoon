@@ -15,14 +15,11 @@ public class SeatManager : MonoBehaviour
     [ReorderableList] public List<Seat> availableSeats = new();
     [ReorderableList] public List<Seat> dirtySeats= new();
     [ReorderableList] public List<Seat> unwaitedSeats = new();
-
-
     // Start is called before the first frame update
     void Start()
     {
         seats = GetComponentsInChildren<Seat>().ToList();
     }
-
     // Update is called once per frame
     void Update()
     {
@@ -77,14 +74,20 @@ public class SeatManager : MonoBehaviour
     {
         dirtySeats.Add(seat);
     }
-
-
-
     public Seat GetDirtySeat()
     {
         if (dirtySeats.Count == 0) return null;
         Seat dirtySeat = dirtySeats[0];
         dirtySeats.RemoveAt(0);
         return dirtySeat;
+    }
+    public void AddSeat(Seat seatToAdd)
+    {
+        seats.Add(seatToAdd);
+    }
+    public void RemoveSeat(Seat seatToRemove)
+    {
+        if(seats.Contains(seatToRemove))
+            seats.Remove(seatToRemove);
     }
 }

@@ -34,7 +34,7 @@ public class QueueSystem : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    void OnValidate()
     {
         if (rowLength < 1 || columnLength < 1) throw new System.ArgumentException("Queue maxRows and maxColumns must be greater than 0.");
 
@@ -83,7 +83,6 @@ public class QueueSystem : MonoBehaviour
         // All positions in queue are unoccupied
         positionOccupied = new bool[queueCapacity];
     }
-
 
     
     public Vector3 JoinQueue(int currentPositionInQueue, out int outPosition) // -1 is reserved for joining the queue from the outside

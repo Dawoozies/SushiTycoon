@@ -11,7 +11,7 @@ public class CustomerNavigationSystem : NavigationSystem
     [SerializeField] int placeInQueue;
     Vector3 seatPosition;
     Vector3 outsideMoveDirection;
-    [SerializeField] CustomerTask currentTask;
+    public CustomerTask currentTask;
     MoveInDirectionNavigator moveInDirectionNavigator;
     PointNavigator pointNavigator;
     NavMeshAgent agent;
@@ -62,7 +62,10 @@ public class CustomerNavigationSystem : NavigationSystem
                     seat = SeatManager.ins.RandomAvailableSeat();
                     if (seat != null)
                     {
-                        currentTask = CustomerTask.TakingSeat;
+                        if(seat.TryCustomerSeat(customer))
+                        {
+                            currentTask = CustomerTask.TakingSeat;
+                        }
                     }
                 }
 
@@ -105,15 +108,13 @@ public class CustomerNavigationSystem : NavigationSystem
             case CustomerTask.Leaving:
                 if(seat != null)
                 {
-                    seat.LeaveSeat();
+                    seat.LeaveSeat(this.customer);
                     seat = null;
-
                 }
                 // Make sure customer isn't still slowed from queue
                 if (placeInQueue >= 0)
                 {
                     QueueSystem.ins.positionOccupied[placeInQueue] = false;
-
                 }
                 placeInQueue = -1;
                 agent.speed = customerSpeedFull;

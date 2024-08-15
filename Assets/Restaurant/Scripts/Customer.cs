@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using uPools;
 
 public class Customer : MonoBehaviour
 {
@@ -10,11 +11,19 @@ public class Customer : MonoBehaviour
     public bool satisfactionDecayable;
     public float patience;      // Seconds customer is willing to wait
     private float patienceDefault; // Customer's default patience
-    public List<DishData> order;
 
     CustomerNavigationSystem navSystem;
     float customerEnterRestaurantCheckTime;
     bool enteredRestaurant;
+
+
+    bool hasOrdered;
+    float orderTime;
+
+    Waiter orderTakingWaiter;
+    public bool readyToOrder;
+
+    Waiter servingWaiter;
     void Start()
     {
         satisfaction = 0.5f;        // Starts at 50%
@@ -23,26 +32,37 @@ public class Customer : MonoBehaviour
         patience = patienceDefault;
         satisfactionDecayable = false;
     }
-    List<DishData> GetMenu(List<DishData> dishData)
-    {
-        return dishData;
-    }
     public void ResetPatience()
     {
         patience = patienceDefault;
     }
     void Update()
     {
-        if (enteredRestaurant)
-            return;
-        if(customerEnterRestaurantCheckTime > 0)
+        if (!enteredRestaurant)
         {
-            customerEnterRestaurantCheckTime -= Time.deltaTime;
+            if (customerEnterRestaurantCheckTime > 0)
+            {
+                customerEnterRestaurantCheckTime -= Time.deltaTime;
+            }
+            else
+            {
+                customerEnterRestaurantCheckTime = RestaurantParameters.ins.CustomerEnterRestaurantCheckTime;
+                RollEnterRestaurant();
+            }
         }
-        else
+        if(navSystem.currentTask == CustomerTask.Seated)
         {
-            customerEnterRestaurantCheckTime = RestaurantParameters.ins.CustomerEnterRestaurantCheckTime;
-            RollEnterRestaurant();
+            if(!hasOrdered)
+            {
+                if(orderTime > 0)
+                {
+                    orderTime -= Time.deltaTime;
+                }
+                else
+                {
+                    readyToOrder = true;
+                }
+            }
         }
     }
     public void OnSpawn(CustomerSpawner spawner, Vector3 spawnPos, Vector3 moveDir)
@@ -62,6 +82,9 @@ public class Customer : MonoBehaviour
 
         customerEnterRestaurantCheckTime = RestaurantParameters.ins.CustomerEnterRestaurantCheckTime;
         enteredRestaurant = false;
+
+        orderTime = RestaurantParameters.ins.GetRandomOrderingTime();
+        readyToOrder = false;
     }
     void RollEnterRestaurant()
     {
@@ -71,5 +94,32 @@ public class Customer : MonoBehaviour
             return;
         navSystem.SetTask(CustomerTask.Queueing);
         enteredRestaurant = true;
+    }
+    public bool TryAssignOrderTakingWaiter(Waiter waiter)
+    {
+        if (orderTakingWaiter != null && orderTakingWaiter != waiter)
+            return false;
+        orderTakingWaiter = waiter;
+        return true;
+    }
+    public bool TryTakeOrder(Waiter waiter, out Order order)
+    {
+        order = null;
+        if (orderTakingWaiter != waiter)
+            return false;
+
+        if(Vector2.Distance(waiter.transform.position, transform.position) > RestaurantParameters.ins.ValidOrderTakingDistance)
+        {
+            return false;
+        }
+
+        order = SharedGameObjectPool.Rent(RestaurantParameters.ins.OrderPrefab).GetComponent<Order>();
+        order.CustomerCreateOrder(this, RestaurantParameters.ins.GetRandomMenuItem());
+        hasOrdered = true;
+
+        orderTakingWaiter = null;
+        readyToOrder = false;
+
+        return true;
     }
 }

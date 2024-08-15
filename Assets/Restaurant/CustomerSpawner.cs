@@ -116,6 +116,8 @@ public class CustomerSpawner : MonoBehaviour
         foreach (var t in spawnPoints)
         {
             Gizmos.color = Color.cyan;
+            if (t.spawnPoint == null)
+                continue;
             Gizmos.DrawWireSphere(t.spawnPoint.position, t.radius);
         }
     }
