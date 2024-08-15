@@ -22,6 +22,8 @@ public class Waiter : NavigationSystem
     [SerializeField, Disable] Order _heldOrder;
     [SerializeField] TriggerVolumeEvents customerDetectionEvents;
     Customer orderingCustomer;
+
+    float originalSpeed;
     protected override void Start()
     {
         base.Start();
@@ -37,6 +39,16 @@ public class Waiter : NavigationSystem
         bool holdingSomething = holdPoint.childCount > 0;
         arms[0].gameObject.SetActive(!holdingSomething);
         arms[1].gameObject.SetActive(holdingSomething);
+
+        if(currentTask == WaiterTask.Idle)
+        {
+            SetActiveNavigator(0);
+        }
+        else
+        {
+            SetActiveNavigator(1);
+        }
+
 
         switch (currentTask)
         {
@@ -86,6 +98,13 @@ public class Waiter : NavigationSystem
                 }
                 break;
             case WaiterTask.DeliveringOrder:
+                pointNavigator.SetPoint(ServingCounter.ins.waiterPoint.position);
+                if(Vector2.Distance(transform.position, ServingCounter.ins.waiterPoint.position) < RestaurantParameters.ins.ServingCounterAddOrderDistance)
+                {
+                    ServingCounter.ins.AddNewOrder(_heldOrder);
+                    _heldOrder = null;
+                    currentTask = WaiterTask.Idle;
+                }
                 break;
         }
         /*if (isIdle)

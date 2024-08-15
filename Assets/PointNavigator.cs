@@ -7,6 +7,12 @@ public class PointNavigator : Navigator
 {
     [SerializeField] Vector3 point;
     public bool hasPoint;
+    float originalSpeed;
+    protected override void Start()
+    {
+        base.Start();
+        originalSpeed = agent.speed;
+    }
     public void ClearPoint()
     {
         point = transform.position;
@@ -33,6 +39,8 @@ public class PointNavigator : Navigator
     {
         if (!movementAllowed || !isActiveNavigator || !hasPoint)
             return;
+
+        agent.speed = originalSpeed;
         Vector3 p = point;
         NavMeshHit hit;
         if (NavMesh.SamplePosition(p, out hit, 5f, NavMesh.AllAreas))
