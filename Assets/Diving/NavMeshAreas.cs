@@ -21,14 +21,14 @@ namespace UnityEngine.AI
         public enum NavMeshAreas
         {
             None = 0,
-            Walkable = 1, NotWalkable = 2, Jump = 4, Dock = 8, FishOnly = 16, StaffOnly = 32, 
+            Walkable = 1, NotWalkable = 2, Jump = 4, Dock = 8, FishOnly = 16, StaffOnly = 128, 
             All = ~0,
         }
 
         // NavMeshSurface, NavMeshLink, NavMeshModifierVolume, etc. use indexes.
         public enum NavMeshAreaIndex
         {
-            Walkable = 0, NotWalkable = 1, Jump = 2, Dock = 3, FishOnly = 4, StaffOnly = 5, 
+            Walkable = 0, NotWalkable = 1, Jump = 2, Dock = 3, FishOnly = 4, StaffOnly = 7, 
         }
 
     #endregion

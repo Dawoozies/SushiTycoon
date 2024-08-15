@@ -34,7 +34,7 @@ public class CustomerNavigationSystem : NavigationSystem
 
         customerSpeedFull = agent.speed;
         inQueueSpeed = customerSpeedFull / 8f;
-        slowDistance = 2f;
+        slowDistance = 1.2f;
         customer = GetComponent<Customer>();
 
         spawnerDetectionEvents.RegisterCollisionCallback(ReturnToSpawnerPool, CollisionEventType.Stay);

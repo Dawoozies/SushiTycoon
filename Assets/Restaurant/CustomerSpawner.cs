@@ -8,7 +8,11 @@ public class CustomerSpawner : MonoBehaviour
 {
     [SerializeField] GameObject prefab;
     [SerializeField, ReorderableList] CustomerSpawnPoint[] spawnPoints;
-    [Serializable]
+    private float _spawnSideBias;
+    [SerializeField] float spawnBiasDelta;
+    [Range(0f, 1f)]
+    public float spawnSideBias;
+[Serializable]
     public class CustomerSpawnPoint
     {
         public Transform spawnPoint;
@@ -30,6 +34,7 @@ public class CustomerSpawner : MonoBehaviour
     void Start()
     {
         SharedGameObjectPool.Prewarm(prefab, maxCustomers);
+        spawnSideBias = 0.5f;
     }
     void Update()
     {
@@ -44,6 +49,7 @@ public class CustomerSpawner : MonoBehaviour
             _spawnTime = spawnTime;
             TrySpawn();
         }
+        SpawnBiasUpdater();
     }
     void TrySpawn()
     {
@@ -57,7 +63,11 @@ public class CustomerSpawner : MonoBehaviour
     {
         if (customersActive >= maxCustomers)
             return;
-        int spawnPointIndex = Random.Range(0, spawnPoints.Length);
+        //OLD CODE BEFORE BIAS ADDED (used for more than 2 spawn points) // int spawnPointIndex = Random.Range(0, spawnPoints.Length);
+        int spawnPointIndex;
+        if (SpawnBiasLeftSide()) spawnPointIndex = 0;
+        else spawnPointIndex = 1;
+
         CustomerSpawnPoint spawnPoint = spawnPoints[spawnPointIndex];
         GameObject poolObj = SharedGameObjectPool.Rent(prefab);
 
@@ -67,6 +77,29 @@ public class CustomerSpawner : MonoBehaviour
             customer.OnSpawn(this, spawnPoint.RandomPos(), spawnPoint.movementDirection);
             customersActive++;
         }
+    }
+    bool SpawnBiasLeftSide()
+    {
+        // To encourage crowd grouping/waves
+        if (spawnSideBias < 0.2f) return true;
+        if (spawnSideBias > 0.8f) return false;
+
+        if (spawnSideBias < Random.value) return true;
+        else return false;
+    }
+    void SpawnBiasUpdater()
+    {
+        if (Random.Range(0f, 1f) >= 0.5f)
+        {
+            spawnSideBias += spawnBiasDelta * Time.deltaTime;
+        }
+        else
+        {
+            spawnSideBias -= spawnBiasDelta * Time.deltaTime;
+        }
+        spawnSideBias = Mathf.Clamp01(spawnSideBias);
+        if (spawnSideBias < 0f || spawnSideBias > 1f) Debug.Log("Invalid Spawn Bias: " + spawnSideBias);
+
     }
     public void Return(GameObject poolInstance)
     {
