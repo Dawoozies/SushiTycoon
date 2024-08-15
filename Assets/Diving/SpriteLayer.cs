@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+[ExecuteInEditMode]
 public class SpriteLayer : MonoBehaviour
 {
     [SerializeField] int layer;
@@ -35,5 +36,16 @@ public class SpriteLayer : MonoBehaviour
     public void SetLayer(int layer)
     {
         this.layer = layer;
+    }
+    [SerializeField] int spriteLayerShift = 5;
+    [ContextMenu("ShiftLayers")]
+    public void ShiftLayers()
+    {
+        if (spriteRenderers == null)
+            spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        foreach (var spriteRenderer in spriteRenderers)
+        {
+            spriteRenderer.sortingOrder += spriteLayerShift;
+        } 
     }
 }

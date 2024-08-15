@@ -10,7 +10,6 @@ public class CustomerNavigationSystem : NavigationSystem
     [SerializeField] Vector3 positionInQueue;
     [SerializeField] int placeInQueue;
     Vector3 seatPosition;
-    [SerializeField] public Vector3 despawnAreaPosition;
     Vector3 outsideMoveDirection;
     [SerializeField] CustomerTask currentTask;
     MoveInDirectionNavigator moveInDirectionNavigator;
@@ -21,6 +20,10 @@ public class CustomerNavigationSystem : NavigationSystem
     float customerSpeedFull;
     public float inQueueSpeed;
     public float slowDistance;
+
+    CustomerSpawner spawner;
+    [SerializeField] TriggerVolumeEvents spawnerDetectionEvents;
+    Vector3 despawnerPosition;
     protected override void Start()
     {
         base.Start();
@@ -33,6 +36,8 @@ public class CustomerNavigationSystem : NavigationSystem
         inQueueSpeed = customerSpeedFull / 8f;
         slowDistance = 2f;
         customer = GetComponent<Customer>();
+
+        spawnerDetectionEvents.RegisterCollisionCallback(ReturnToSpawnerPool, CollisionEventType.Stay);
     }
     protected override void Update()
     {
@@ -98,7 +103,6 @@ public class CustomerNavigationSystem : NavigationSystem
                 seat.isSeated = true;
                 break;
             case CustomerTask.Leaving:
-
                 if(seat != null)
                 {
                     seat.LeaveSeat();
@@ -113,7 +117,7 @@ public class CustomerNavigationSystem : NavigationSystem
                 }
                 placeInQueue = -1;
                 agent.speed = customerSpeedFull;
-                pointNavigator.SetPoint(despawnAreaPosition);
+                pointNavigator.SetPoint(despawnerPosition);
                 break;
         }
     }
@@ -121,15 +125,37 @@ public class CustomerNavigationSystem : NavigationSystem
     {
         outsideMoveDirection = moveDir;
     }
-
+    public void WarpAgent(Vector3 pos)
+    {
+        if (agent == null)
+            agent = GetComponent<NavMeshAgent>();
+        agent.Warp(pos);
+    }
+    public void SetSpawnerReference(CustomerSpawner spawner)
+    {
+        this.spawner = spawner;
+        despawnerPosition = spawner.DespawnerPositionRandom();
+    }
+    void ReturnToSpawnerPool(Collider2D col)
+    {
+        if(currentTask == CustomerTask.Outside || currentTask == CustomerTask.Leaving)
+        {
+            spawner.Return(gameObject);
+        }
+    }
+    public void InitialiseNavigator()
+    {
+        currentTask = CustomerTask.Outside;
+    }
+    public void SetTask(CustomerTask task)
+    {
+        currentTask = task;
+    }
     private void OnValidate()
     {
         if(currentTask == CustomerTask.Leaving)
         {
             if (placeInQueue >= 0) QueueSystem.ins.positionOccupied[placeInQueue] = false;
-
-
-
         }
     }
 }
