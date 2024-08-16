@@ -162,7 +162,7 @@ public class QueueSystem : MonoBehaviour
         foreach (Vector3 position in queuePosition)
         {
             Gizmos.DrawSphere(position, 0.1f); // Draw a sphere at each point
-            Handles.Label(position + Vector3.up * 0.2f, i.ToString());
+            Handles.Label(position + Vector3.up * 0.25f + Vector3.left * 0.08f, i.ToString());
             i++;
         }
     }

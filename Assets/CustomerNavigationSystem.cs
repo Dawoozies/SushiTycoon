@@ -33,7 +33,7 @@ public class CustomerNavigationSystem : NavigationSystem
         placeInQueue = -1; // Not yet in queue
 
         customerSpeedFull = agent.speed;
-        inQueueSpeed = customerSpeedFull / 8f;
+        inQueueSpeed = customerSpeedFull / 4f;
         slowDistance = 1.2f;
         customer = GetComponent<Customer>();
 

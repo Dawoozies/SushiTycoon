@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using uPools;
 
@@ -22,6 +24,8 @@ public class Customer : MonoBehaviour
 
     Waiter orderTakingWaiter;
     public bool readyToOrder;
+
+    public string stateText;
 
     Waiter servingWaiter;
     void Start()
@@ -63,6 +67,30 @@ public class Customer : MonoBehaviour
                     readyToOrder = true;
                 }
             }
+        }
+        if(navSystem.currentTask == CustomerTask.Outside)
+        {
+            stateText = "O";
+        }
+        if (navSystem.currentTask == CustomerTask.Leaving)
+        {
+            stateText = "L";
+
+        }
+        if (navSystem.currentTask == CustomerTask.TakingSeat)
+        {
+            stateText = "T";
+
+        }
+        if (navSystem.currentTask == CustomerTask.Seated)
+        {
+            stateText = "S";
+
+        }
+        if (navSystem.currentTask == CustomerTask.Queueing)
+        {
+            stateText = "Q";
+
         }
     }
     public void OnSpawn(CustomerSpawner spawner, Vector3 spawnPos, Vector3 moveDir)
@@ -121,5 +149,11 @@ public class Customer : MonoBehaviour
         readyToOrder = false;
 
         return true;
+    }
+    [CustomEditor(typeof(Transform))]
+    void OnDrawGizmos()
+    {
+        Handles.color = Color.yellow;
+        Handles.Label(transform.position + Vector3.up * 0.25f + Vector3.left * 0.07f, stateText, EditorStyles.boldLabel);
     }
 }
