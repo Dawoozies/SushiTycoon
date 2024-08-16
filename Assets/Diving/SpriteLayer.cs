@@ -5,7 +5,7 @@ using UnityEngine;
 public class SpriteLayer : MonoBehaviour
 {
     [SerializeField] int layer;
-    int _layer;
+    bool updateLayers;
     int[] originalLayers;
     SpriteRenderer[] spriteRenderers;
     private void Start()
@@ -20,9 +20,8 @@ public class SpriteLayer : MonoBehaviour
     }
     private void Update()
     {
-        if (_layer != layer)
+        if(updateLayers)
         {
-            _layer = layer;
             UpdateLayers();
         }
     }
@@ -30,12 +29,14 @@ public class SpriteLayer : MonoBehaviour
     {
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
-            spriteRenderers[i].sortingOrder = originalLayers[i] + _layer;
+            spriteRenderers[i].sortingOrder = originalLayers[i] + layer;
         }
+        updateLayers = false;
     }
     public void SetLayer(int layer)
     {
         this.layer = layer;
+        updateLayers = true;
     }
     [SerializeField] int spriteLayerShift = 5;
     [ContextMenu("ShiftLayers")]

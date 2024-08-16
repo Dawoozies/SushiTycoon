@@ -11,7 +11,7 @@ public class Building : MonoBehaviour
     {
         ins = this;
     }
-    [SerializeField] NavMeshSurface navMeshSurface;
+    [SerializeField] Transform areaToPlace;
     [SerializeField] GameObject prefab;
     [SerializeField] Color selectedForBuildColorTint;
     [SerializeField] Color selectedForBuildOverlapColorTint;
@@ -21,9 +21,9 @@ public class Building : MonoBehaviour
     Action onBuild;
 
     bool builtThisFrame;
+    [SerializeField] LayerMask canBuildLayers;
     void Start()
     {
-        navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
         SelectForBuild(prefab);
     }
     void Update()
@@ -41,7 +41,7 @@ public class Building : MonoBehaviour
         if(Input.GetMouseButtonDown(0) && canBuild)
         {
             onBuild?.Invoke();
-            selectedForBuild.transform.parent = navMeshSurface.transform;
+            selectedForBuild.transform.parent = areaToPlace.transform;
             selectedForBuild = null;
             onBuildingEvents = null;
             //we dont destroy selected for build cause we build it
@@ -60,7 +60,7 @@ public class Building : MonoBehaviour
     {
         if(builtThisFrame)
         {
-            navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData);
+            NavMeshManager.ins.UpdateNavMesh();
             builtThisFrame = false;
         }
     }

@@ -31,8 +31,6 @@ public class Seat : MonoBehaviour
         dirtPosition = transform.position + SeatingDirectionToVector() * RestaurantParameters.ins.SeatingDistance;
         dirt.transform.position = dirtPosition;
     }
-
-    // Update is called once per frame
     void Update()
     {
         if(isDirty)
