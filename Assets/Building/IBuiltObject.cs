@@ -10,4 +10,5 @@ public interface IBuiltObject
     public void SetBuilder(ObjectBuilder builder);
     public void Build();
     public void CheckOverlaps(out bool isOverlappingCorrectArea, out bool isOverlappingIncorrectArea);
+    public void Remove();
 }

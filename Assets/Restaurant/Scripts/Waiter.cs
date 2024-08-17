@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-
 public class Waiter : NavigationSystem
 {
 
@@ -89,13 +88,13 @@ public class Waiter : NavigationSystem
             case WaiterTask.TakingOrder:
                 pointNavigator.SetPoint(orderingCustomer.transform.position);
                 Order heldOrder;
-                if(orderingCustomer.TryTakeOrder(this, out heldOrder))
-                {
-                    heldOrder.transform.parent = holdPoint;
-                    heldOrder.transform.localPosition = Vector3.zero;
-                    _heldOrder = heldOrder;
-                    currentTask = WaiterTask.DeliveringOrder;
-                }
+                //if(orderingCustomer.TryTakeOrder(this, out heldOrder))
+                //{
+                //    heldOrder.transform.parent = holdPoint;
+                //    heldOrder.transform.localPosition = Vector3.zero;
+                //    _heldOrder = heldOrder;
+                //    currentTask = WaiterTask.DeliveringOrder;
+                //}
                 break;
             case WaiterTask.DeliveringOrder:
                 pointNavigator.SetPoint(ServingCounter.ins.waiterPoint.position);
@@ -149,14 +148,14 @@ public class Waiter : NavigationSystem
     public void OnCustomerDetection(Collider2D col)
     {
         Customer customer = col.GetComponentInParent<Customer>();
-        if(customer != null && customer.readyToOrder && currentTask == WaiterTask.Idle)
-        {
-            if(customer.TryAssignOrderTakingWaiter(this))
-            {
-                currentTask = WaiterTask.TakingOrder;
-                orderingCustomer = customer;
-            }
-        }
+        //if(customer != null && customer.readyToOrder && currentTask == WaiterTask.Idle)
+        //{
+        //    if(customer.TryAssignOrderTakingWaiter(this))
+        //    {
+        //        currentTask = WaiterTask.TakingOrder;
+        //        orderingCustomer = customer;
+        //    }
+        //}
     }
 }
 public enum WaiterTask

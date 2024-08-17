@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.AI;
 public abstract class NavigationSystem : MonoBehaviour
 {
     TargetNavigator targetNavigator;
     INavigator[] taskNavigators;
     int currentNavigator;
+    NavMeshAgent agent;
     protected virtual void Start()
     {
         targetNavigator = GetComponent<TargetNavigator>();
@@ -37,5 +38,16 @@ public abstract class NavigationSystem : MonoBehaviour
     public virtual void ClearTarget()
     {
         targetNavigator.ClearTarget();
+    }
+    public void SetActiveNavigatorSpeed(float value)
+    {
+        taskNavigators[currentNavigator].SetSpeed(value);
+    }
+    public void Warp(Vector2 point)
+    {
+        if(agent == null)
+            agent = GetComponent<NavMeshAgent>();
+
+        agent.Warp(point);
     }
 }

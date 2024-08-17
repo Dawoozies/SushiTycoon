@@ -12,6 +12,7 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
     SpriteLayer _spriteLayer;
 
     public UnityEvent onBuild;
+    public UnityEvent onReturnToPool;
 
     public BoxCollider2D boxCollider;
     Collider2D[] overlapResults;
@@ -26,6 +27,7 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
     }
     public void OnReturn()
     {
+        onReturnToPool?.Invoke();
     }
     public void SetBuilder(ObjectBuilder builder)
     {
@@ -69,6 +71,10 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(transform.position + (Vector3)boxOffset, boxSize);
+    }
+    public void Remove()
+    {
+        builder.RemoveObject((IBuiltObject)this);
     }
 }
 

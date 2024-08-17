@@ -14,6 +14,8 @@ public class MainCamera : MonoBehaviour
     public Vector2 orthographicSizeBounds;
     public float cameraMoveSensitivity;
     public AnimationCurve cameraMoveSensitivityCurve;
+
+    [SerializeField] float maximumMouseDelta;
     private void Awake()
     {
         ins = this;
@@ -38,6 +40,13 @@ public class MainCamera : MonoBehaviour
         mouseWorldPos = c.ScreenToWorldPoint(mouseScreenPos);
         mouseDelta.x = Input.GetAxis("Mouse X");
         mouseDelta.y = Input.GetAxis("Mouse Y");
+
+        if(mouseDelta.magnitude > maximumMouseDelta)
+        {
+            Debug.Log($"mouseDelta = {mouseDelta} exceeds maximum magnitude of {maximumMouseDelta}");
+            return;
+        }
+
         mouseScrollDelta = Input.mouseScrollDelta;
 
         if (Input.GetMouseButtonDown(2))

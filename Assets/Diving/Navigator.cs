@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.AI;
 //Strategy pattern
@@ -12,17 +13,18 @@ using UnityEngine.AI;
 //do random walk and a patrol path
 public abstract class Navigator : MonoBehaviour, INavigator
 {
-    protected NavMeshAgent agent;
+    [HideInInspector] public NavMeshAgent agent;
     [SerializeField] protected NavMeshAreas allowedAreas;
-    public Vector3 destination;
+    [Disable] public Vector3 destination;
     protected NavMeshPathStatus pathStatus;
-    public bool hasPath;
-    public bool isOnNavMesh;
-    protected bool isPathStale;
-    protected bool isStopped;
-    public float remainingDistance;
-    public Vector3 velocity;
-    public float speed;
+    [Disable] public bool hasPath;
+    [Disable] public bool isOnNavMesh;
+    [Disable] protected bool isPathStale;
+    [Disable] protected bool isStopped;
+    [Disable] public float remainingDistance;
+    [Disable] public Vector3 velocity;
+    [Disable] public float speed;
+    public bool nearDestination => remainingDistance < agent.stoppingDistance;
     protected virtual void Awake() { }
     protected virtual void Start() { 
         agent = GetComponent<NavMeshAgent>();
@@ -69,6 +71,10 @@ public abstract class Navigator : MonoBehaviour, INavigator
     {
         isActiveNavigator = value;
     }
+    public void SetSpeed(float value)
+    {
+        agent.speed = value;
+    }
 }
 public interface INavigator
 {
@@ -76,4 +82,5 @@ public interface INavigator
     public void Navigate();
     public void MovementAllowed(bool value);
     public void SetActiveNavigator(bool value);
+    public void SetSpeed(float value);
 }

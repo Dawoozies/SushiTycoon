@@ -48,7 +48,7 @@ public class OnBuildingEvents : MonoBehaviour
 
         boxOffset = buildBounds.offset;
         boxOffset.Scale(buildBounds.transform.lossyScale);
-        overlapResults = Physics2D.OverlapBoxAll(transform.position + boxOffset, boxSize, transform.localEulerAngles.z, RestaurantParameters.ins.BuildingLayerMask);
+        overlapResults = Physics2D.OverlapBoxAll(transform.position + boxOffset, boxSize, transform.localEulerAngles.z, RestaurantParameters.ins.AllBuiltObjectsLayerMask);
         return overlapResults.Length > 0;
     }
     public void ChangeColorTint(Color colorTint)

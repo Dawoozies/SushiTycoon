@@ -28,12 +28,12 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerEnter2D(Collider2D other)
     {
-        if(debugging)
+        if (!CheckValidTag(other))
+            return;
+        if (debugging)
         {
             Debug.Log($"{transform.name} detected {other.name} Enter");
         }
-        if (!CheckValidTag(other))
-            return;
         foreach (var a in onEnterActions)
         {
             a.Invoke(other);
@@ -41,12 +41,12 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerStay2D(Collider2D other)
     {
-        if(debugging)
+        if (!CheckValidTag(other))
+            return;
+        if (debugging)
         {
             Debug.Log($"{transform.name} detected {other.name} Stay");
         }
-        if (!CheckValidTag(other))
-            return;
         foreach (var a in onStayActions)
         {
             a.Invoke(other);
@@ -54,12 +54,12 @@ public class TriggerVolumeEvents : MonoBehaviour
     }
     void OnTriggerExit2D(Collider2D other)
     {
+        if (!CheckValidTag(other))
+            return;
         if (debugging)
         {
             Debug.Log($"{transform.name} detected {other.name} Exit");
         }
-        if (!CheckValidTag(other))
-            return;
         foreach (var a in onExitActions)
         {
             a.Invoke(other);
