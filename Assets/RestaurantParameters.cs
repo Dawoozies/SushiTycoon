@@ -22,6 +22,7 @@ public class RestaurantParameters : MonoBehaviour
     public LayerMask AllBuiltObjectsLayerMask;
     public float ValidOrderTakingDistance = 0.75f;
     public float ServingCounterAddOrderDistance;
+
     public List<DishData> Menu;
 
     public DishData GetRandomMenuItem()

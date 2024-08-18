@@ -34,14 +34,15 @@ public class Customer : NavigationSystem
             int queueNumber = queueData.queueNumber;
             return queueNumber == 0;
         } }
-
-    Func<object, TableData> fetchTableData;
+    Table assignedTable;
+    Action leaveTableAction;
     protected override void Start()
     {
         base.Start();
 
         despawnDetectionEvents.RegisterCollisionCallback(OnDespawnDetected, CollisionEventType.Enter);
         ActionTextPool.ins.Request(CustomerActionText);
+        leaveTableAction = LeaveTable;
     }
     ActionTextArgs CustomerActionText()
     {
@@ -88,6 +89,18 @@ public class Customer : NavigationSystem
                 break;
             case Task.Queue:
                 SetActiveNavigatorSpeed(queueSpeed);
+                if(atFrontOfQueue)
+                {
+                    //try get table
+                    if(Tables.ins.TryGetRandomTable(Table.State.Free, out assignedTable))
+                    {
+                        if(assignedTable.TryAssignSeat(this, ref leaveTableAction))
+                        {
+                            LeaveQueue(Task.Table);
+                        }
+                        break;
+                    }
+                }
 
                 QueueData queueData = fetchQueuePosition(this);
                 if (queueData.queueNumber < 0)
@@ -95,19 +108,6 @@ public class Customer : NavigationSystem
                     //invalid queue position
                     LeaveQueue(Task.Leaving);
                     break;
-                }
-
-                if(atFrontOfQueue)
-                {
-                    Table table;
-                    if(Tables.ins.TryGetRandomTable(out table))
-                    {
-                        if(table.TryTakeSeat(this, out fetchTableData))
-                        {
-                            LeaveQueue(Task.Table);
-                            break;
-                        }
-                    }
                 }
 
                 pointNavigator.SetPoint(queueData.position);
@@ -118,8 +118,11 @@ public class Customer : NavigationSystem
                 break;
             case Task.Table:
                 SetActiveNavigatorSpeed(walkingSpeed);
-                Vector3 seatPos = fetchTableData(this).position;
-                pointNavigator.SetPoint(seatPos);
+                Vector2 seatPosition;
+                if(assignedTable.TryGetSeatPosition(this, out seatPosition))
+                {
+                    pointNavigator.SetPoint(seatPosition);
+                }
                 break;
             case Task.Leaving:
                 SetActiveNavigatorSpeed(leavingSpeed);
@@ -158,6 +161,13 @@ public class Customer : NavigationSystem
         currentTask = nextTask;
         fetchQueuePosition = null;
         WaitingArea.ins.LeaveQueue(this);
+        if(nextTask == Task.Leaving)
+            pointNavigator.SetPoint(spawner.DespawnerPositionRandom());
+    }
+    void LeaveTable()
+    {
+        assignedTable = null;
+        currentTask = Task.Leaving;
         pointNavigator.SetPoint(spawner.DespawnerPositionRandom());
     }
 }

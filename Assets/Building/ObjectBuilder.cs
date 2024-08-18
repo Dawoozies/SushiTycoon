@@ -15,7 +15,6 @@ public class ObjectBuilder : MonoBehaviour
     [SerializeField] bool snapToGrid;
     bool builtThisFrame;
     GameObject buildObjectInstance;
-
     public UnityEvent<GameObject> onObjectBuild;
     public UnityEvent<GameObject> onObjectDeleted;
     private void Update()
@@ -50,6 +49,7 @@ public class ObjectBuilder : MonoBehaviour
         {
             BuildObject();
         }
+
         if(Input.GetMouseButton(1))
         {
             //deletion
