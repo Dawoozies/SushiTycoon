@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,7 @@ public class MainCamera : MonoBehaviour
 {
     public static MainCamera ins;
     Camera c;
+    CinemachineVirtualCamera cinemachineVirtualCamera;
     public Vector2 mouseScreenPos;
     public Vector2 mouseWorldPos;
     public Vector2 mouseDelta;
@@ -19,7 +21,8 @@ public class MainCamera : MonoBehaviour
     private void Awake()
     {
         ins = this;
-        c = GetComponent<Camera>();
+        c = GetComponentInChildren<Camera>();
+        cinemachineVirtualCamera = GetComponentInChildren<CinemachineVirtualCamera>();
     }
     public Vector3 WorldToScreenSpace(Vector3 worldPos)
     {
@@ -40,6 +43,7 @@ public class MainCamera : MonoBehaviour
         mouseWorldPos = c.ScreenToWorldPoint(mouseScreenPos);
         mouseDelta.x = Input.GetAxis("Mouse X");
         mouseDelta.y = Input.GetAxis("Mouse Y");
+
 
         if(mouseDelta.magnitude > maximumMouseDelta)
         {
@@ -67,11 +71,14 @@ public class MainCamera : MonoBehaviour
         {
             return;
         }
-        transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, c.orthographicSize))));
+        cinemachineVirtualCamera.transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, c.orthographicSize))));
     }
     void CameraZoom()
     {
-        c.orthographicSize -= mouseScrollDelta.y;
-        c.orthographicSize = Mathf.Clamp(c.orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
+        //c.orthographicSize -= mouseScrollDelta.y;
+        //c.orthographicSize = Mathf.Clamp(c.orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
+
+        cinemachineVirtualCamera.m_Lens.OrthographicSize -= mouseScrollDelta.y;
+        cinemachineVirtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(cinemachineVirtualCamera.m_Lens.OrthographicSize, orthographicSizeBounds.x, orthographicSizeBounds.y);
     }
 }

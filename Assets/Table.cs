@@ -14,12 +14,18 @@ public class Table : MonoBehaviour
     {
         Free,
         Full,
+        WaitingToOrder,
+        WaitingForCompletedOrders,
+        WaitingForBill,
         Dirty,
     }
     private State state;
 
     Waiter assignedWaiter;
     Action breakWaiterAssignment;
+
+    [SerializeField] List<Order> orders = new();
+    public bool needsWaiter => orders.Count > 0 && assignedWaiter == null;
     public void OnRent()
     {
         atTable.Clear();
@@ -42,6 +48,8 @@ public class Table : MonoBehaviour
         ////break seating assignments
         leaveTableAction?.Invoke();
         leaveTableAction = null;
+
+        ChangeState(State.Free);
         Tables.ins.RemoveTable(this);
     }
     void ChangeState(State newState)
@@ -85,6 +93,13 @@ public class Table : MonoBehaviour
         int indexOfSeat = atTable.IndexOf(o);
         seatPosition = seatingPoints[indexOfSeat].position;
         return true;
+    }
+    public void CreateUnfinishedOrder(Customer customer, List<DishData> pickedDishes, out Order awaitingOrder)
+    {
+        awaitingOrder = SharedGameObjectPool.Rent(RestaurantParameters.ins.OrderPrefab).GetComponent<Order>();
+        awaitingOrder.CustomerCreateOrder(customer, pickedDishes);
+        orders.Add(awaitingOrder);
+        ChangeState(State.WaitingToOrder);
     }
 }
 public struct SeatingData

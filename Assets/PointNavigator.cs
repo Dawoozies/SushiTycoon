@@ -8,6 +8,7 @@ public class PointNavigator : Navigator
     [SerializeField] Vector3 point;
     public bool hasPoint;
     float originalSpeed;
+    public bool nearPoint => Vector2.Distance(transform.position, point) < agent.stoppingDistance;
     protected override void Start()
     {
         base.Start();

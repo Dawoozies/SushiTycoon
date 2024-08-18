@@ -24,7 +24,6 @@ public abstract class Navigator : MonoBehaviour, INavigator
     [Disable] public float remainingDistance;
     [Disable] public Vector3 velocity;
     [Disable] public float speed;
-    public bool nearDestination => remainingDistance < agent.stoppingDistance;
     protected virtual void Awake() { }
     protected virtual void Start() { 
         agent = GetComponent<NavMeshAgent>();

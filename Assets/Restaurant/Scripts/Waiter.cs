@@ -11,7 +11,16 @@ public class Waiter : NavigationSystem
     public Seat seat;
 
     PointNavigator pointNavigator;
-    [SerializeField] WaiterTask currentTask;
+    public enum Task
+    {
+        Waiting,
+        TakingOrders,
+        OrdersToKitchen,
+        TakingCompletedOrderToTable,
+        CleaningTable,
+    }
+    //service table means do anything the table needs
+    [SerializeField] Task currentTask;
 
     bool atSeat;
 
@@ -19,7 +28,6 @@ public class Waiter : NavigationSystem
     Transform[] arms;
     [SerializeField] Transform holdPoint;
     [SerializeField, Disable] Order _heldOrder;
-    [SerializeField] TriggerVolumeEvents customerDetectionEvents;
     Customer orderingCustomer;
 
     float originalSpeed;
@@ -29,7 +37,6 @@ public class Waiter : NavigationSystem
         isIdle = true;
         pointNavigator = GetComponent<PointNavigator>();
         ActionTextPool.ins.Request(TaskProgressText);
-        customerDetectionEvents.RegisterCollisionCallback(OnCustomerDetection, CollisionEventType.Stay);
     }
     protected override void Update()
     {
@@ -39,7 +46,7 @@ public class Waiter : NavigationSystem
         arms[0].gameObject.SetActive(!holdingSomething);
         arms[1].gameObject.SetActive(holdingSomething);
 
-        if(currentTask == WaiterTask.Idle)
+        if(currentTask == Task.Waiting)
         {
             SetActiveNavigator(0);
         }
@@ -51,59 +58,15 @@ public class Waiter : NavigationSystem
 
         switch (currentTask)
         {
-            case WaiterTask.Idle:
-                seat = SeatManager.ins.RandomSeatWaiterNeeded();
-                if (seat != null)
-                {
-                    if (seat.isDirty)
-                    {
-                        bool taskedSucceeded = seat.TryTaskWaiter(this);
-                        if(taskedSucceeded)
-                        {
-                            pointNavigator.SetPoint(seat.GetDirtPosition());
-                            currentTask = WaiterTask.CleaningTable;
-                        }
-                    }
-                }
+            case Task.Waiting:
                 break;
-            case WaiterTask.CleaningTable:
-                if(seat == null)
-                {
-                    currentTask = WaiterTask.Idle;
-                    break;
-                }
-                atSeat = Vector2.Distance(transform.position, seat.transform.position) < RestaurantParameters.ins.SeatingDistance;
-                if(atSeat)
-                {
-                    bool seatCleaned = seat.CleanSeat();
-                    if(seatCleaned)
-                    {
-                        seat.ClearTaskWaiter(this);
-                        seat = null;
-                        currentTask = WaiterTask.Idle;
-                        atSeat = false;
-                    }
-                }
+            case Task.TakingOrders:
                 break;
-            case WaiterTask.TakingOrder:
-                pointNavigator.SetPoint(orderingCustomer.transform.position);
-                Order heldOrder;
-                //if(orderingCustomer.TryTakeOrder(this, out heldOrder))
-                //{
-                //    heldOrder.transform.parent = holdPoint;
-                //    heldOrder.transform.localPosition = Vector3.zero;
-                //    _heldOrder = heldOrder;
-                //    currentTask = WaiterTask.DeliveringOrder;
-                //}
+            case Task.OrdersToKitchen:
                 break;
-            case WaiterTask.DeliveringOrder:
-                pointNavigator.SetPoint(ServingCounter.ins.waiterPoint.position);
-                if(Vector2.Distance(transform.position, ServingCounter.ins.waiterPoint.position) < RestaurantParameters.ins.ServingCounterAddOrderDistance)
-                {
-                    ServingCounter.ins.AddNewOrder(_heldOrder);
-                    _heldOrder = null;
-                    currentTask = WaiterTask.Idle;
-                }
+            case Task.TakingCompletedOrderToTable:
+                break;
+            case Task.CleaningTable:
                 break;
         }
         /*if (isIdle)
@@ -137,7 +100,7 @@ public class Waiter : NavigationSystem
     {
         taskProgressText.worldPos = transform.position + Vector3.up * 0.5f;
         string[] textLines = { "", "" };
-        if (currentTask == WaiterTask.CleaningTable && seat != null && atSeat)
+        if (currentTask == Task.CleaningTable && seat != null && atSeat)
         {
             textLines[0] = "Cleaning";
             textLines[1] = $"{(int)Mathf.Lerp(100, 0, seat.dirtAmount)}%";
@@ -145,20 +108,4 @@ public class Waiter : NavigationSystem
         taskProgressText.textLines = textLines;
         return taskProgressText;
     }
-    public void OnCustomerDetection(Collider2D col)
-    {
-        Customer customer = col.GetComponentInParent<Customer>();
-        //if(customer != null && customer.readyToOrder && currentTask == WaiterTask.Idle)
-        //{
-        //    if(customer.TryAssignOrderTakingWaiter(this))
-        //    {
-        //        currentTask = WaiterTask.TakingOrder;
-        //        orderingCustomer = customer;
-        //    }
-        //}
-    }
-}
-public enum WaiterTask
-{
-    Idle, CleaningTable, TakingOrder, DeliveringOrder
 }

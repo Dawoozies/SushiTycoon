@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using uPools;
 public class Customer : NavigationSystem
 {
     //walking outside
@@ -12,6 +14,10 @@ public class Customer : NavigationSystem
         WalkingOutside,
         Queue,
         Table,
+        LookingAtMenu,
+        HasDecidedOrder,
+        Eating,
+        NeedsBill,
         Leaving,
     }
     public Task currentTask;
@@ -36,6 +42,9 @@ public class Customer : NavigationSystem
         } }
     Table assignedTable;
     Action leaveTableAction;
+
+    float orderTime;
+    Order awaitingOrder;
     protected override void Start()
     {
         base.Start();
@@ -62,6 +71,24 @@ public class Customer : NavigationSystem
             case Task.Leaving:
                 textLines[0] = "Leaving";
                 break;
+            case Task.LookingAtMenu:
+                textLines[0] = "Looking At Menu";
+                break;
+            case Task.HasDecidedOrder:
+                string[] dishNames = awaitingOrder.GetDishNames();
+                textLines = new string[dishNames.Length + 1];
+                textLines[0] = "Order:";
+                for (int i = 0; i < dishNames.Length; i++)
+                {
+                    textLines[i+1] = dishNames[i];
+                }
+                break;
+            case Task.Eating:
+                textLines[0] = "Enjoying Succulent Meal";
+                break;
+            case Task.NeedsBill:
+                textLines[0] = "Waiting For Bill";
+                break;
         }
         actionTextArgs.textLines = textLines;
         return actionTextArgs;
@@ -82,19 +109,19 @@ public class Customer : NavigationSystem
         {
             case Task.WalkingOutside:
                 SetActiveNavigatorSpeed(walkingSpeed);
-                if(WaitingArea.ins.TryEnqueue(this, out fetchQueuePosition))
+                if (WaitingArea.ins.TryEnqueue(this, out fetchQueuePosition))
                 {
                     currentTask = Task.Queue;
                 }
                 break;
             case Task.Queue:
                 SetActiveNavigatorSpeed(queueSpeed);
-                if(atFrontOfQueue)
+                if (atFrontOfQueue)
                 {
                     //try get table
-                    if(Tables.ins.TryGetRandomTable(Table.State.Free, out assignedTable))
+                    if (Tables.ins.TryGetRandomTable(Table.State.Free, out assignedTable))
                     {
-                        if(assignedTable.TryAssignSeat(this, ref leaveTableAction))
+                        if (assignedTable.TryAssignSeat(this, ref leaveTableAction))
                         {
                             LeaveQueue(Task.Table);
                         }
@@ -111,7 +138,7 @@ public class Customer : NavigationSystem
                 }
 
                 pointNavigator.SetPoint(queueData.position);
-                if (pointNavigator.nearDestination && !Patience())
+                if (pointNavigator.nearPoint && !Patience())
                 {
                     LeaveQueue(Task.Leaving);
                 }
@@ -119,13 +146,37 @@ public class Customer : NavigationSystem
             case Task.Table:
                 SetActiveNavigatorSpeed(walkingSpeed);
                 Vector2 seatPosition;
-                if(assignedTable.TryGetSeatPosition(this, out seatPosition))
+                if (assignedTable.TryGetSeatPosition(this, out seatPosition))
                 {
                     pointNavigator.SetPoint(seatPosition);
+                    if(pointNavigator.nearPoint)
+                    {
+                        currentTask = Task.LookingAtMenu;
+                        orderTime = RestaurantParameters.ins.GetRandomOrderingTime();
+                    }
                 }
                 break;
             case Task.Leaving:
                 SetActiveNavigatorSpeed(leavingSpeed);
+                break;
+            case Task.LookingAtMenu:
+                if(orderTime > 0)
+                {
+                    orderTime -= Time.deltaTime;
+                }
+                else
+                {
+                    CreateOrder();
+                    currentTask = Task.HasDecidedOrder;
+                    break;
+                }
+                break;
+            case Task.HasDecidedOrder:
+
+                break;
+            case Task.Eating:
+                break;
+            case Task.NeedsBill:
                 break;
         }
     }
@@ -144,6 +195,7 @@ public class Customer : NavigationSystem
     }
     void OnDespawnDetected(Collider2D despawnCollider)
     {
+        LeaveQueue(Task.WalkingOutside);
         spawner.Return(gameObject);
     }
     bool Patience()
@@ -169,5 +221,10 @@ public class Customer : NavigationSystem
         assignedTable = null;
         currentTask = Task.Leaving;
         pointNavigator.SetPoint(spawner.DespawnerPositionRandom());
+    }
+    void CreateOrder()
+    {
+        List<DishData> pickedDishes = RestaurantParameters.ins.GetRandomMenuItems(RestaurantParameters.ins.GetRandomMenuOrderAmount());
+        assignedTable.CreateUnfinishedOrder(this, pickedDishes, out awaitingOrder);
     }
 }
