@@ -16,6 +16,7 @@ public class Customer : NavigationSystem
         Table,
         LookingAtMenu,
         HasDecidedOrder,
+        WaitingForOrder,
         Eating,
         NeedsBill,
         Leaving,
@@ -166,13 +167,14 @@ public class Customer : NavigationSystem
                 }
                 else
                 {
-                    CreateOrder();
+                    CreateOrderToTable();
                     currentTask = Task.HasDecidedOrder;
                     break;
                 }
                 break;
             case Task.HasDecidedOrder:
-
+                break;
+            case Task.WaitingForOrder:
                 break;
             case Task.Eating:
                 break;
@@ -189,7 +191,8 @@ public class Customer : NavigationSystem
             pointNavigator = GetComponent<PointNavigator>();
         this.spawner = spawner;
         moveInDirectionNavigator.SetMoveDirection(moveDir);
-        Warp(spawnPos);
+        transform.position = spawnPos;
+        //Warp(spawnPos);
 
         patience = RestaurantParameters.ins.GetRandomPatience();
     }
@@ -222,9 +225,14 @@ public class Customer : NavigationSystem
         currentTask = Task.Leaving;
         pointNavigator.SetPoint(spawner.DespawnerPositionRandom());
     }
-    void CreateOrder()
+    void CreateOrderToTable()
     {
         List<DishData> pickedDishes = RestaurantParameters.ins.GetRandomMenuItems(RestaurantParameters.ins.GetRandomMenuOrderAmount());
-        assignedTable.CreateUnfinishedOrder(this, pickedDishes, out awaitingOrder);
+        assignedTable.CreateUnfinishedOrder(this, pickedDishes, out awaitingOrder, OrderTakenCallback);
+    }
+    void OrderTakenCallback()
+    {
+        Debug.Log("Customer waiting for order now");
+        currentTask = Task.WaitingForOrder;
     }
 }

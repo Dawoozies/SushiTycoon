@@ -2,40 +2,58 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public class Dish : MonoBehaviour, IDish
+public class Dish : MonoBehaviour
 {
-    public DishState state => _state;
-    private DishState _state;
-    public DishData dishData => _dishData;
-
-    public Chef assignedChef => throw new NotImplementedException();
-
-    public Waiter assignedWaiter => throw new NotImplementedException();
-
-    public Customer assignedCustomer => throw new NotImplementedException();
-
-    private DishData _dishData;
-
-    private PreperationStage prepStage;
-    public void SetDishData(DishData dishData)
+    [SerializeField, Disable] Chef assignedChef;
+    [SerializeField, Disable] DishData dishData;
+    [SerializeField, Disable] List<PreperationStage> unfinishedPrep = new();
+    float stageTime;
+    float eatingTime;
+    public void InitializeDish(Chef initializingChef, DishData dishData)
     {
-        _dishData = dishData;
-        _state = DishState.Empty;
+        assignedChef = initializingChef;
+        this.dishData = dishData;
+        unfinishedPrep.Clear();
+        foreach (PreperationStage prepStage in dishData.preparation)
+        {
+            unfinishedPrep.Add(prepStage);
+        }
     }
-}
+    public bool TryPrepDish()
+    {
+        if(unfinishedPrep.Count > 0)
+        {
+            if(stageTime < unfinishedPrep[0].stageTime)
+            {
+                stageTime += Time.deltaTime;
+            }
+            else
+            {
+                unfinishedPrep.RemoveAt(0);
+                stageTime = 0f;
+            }
+            return false;
+        }
+        return true;
+    }
+    public string DishNameText()
+    {
+        return dishData.name;
+    }
+    public string PrepDescriptionText()
+    {
+        if (unfinishedPrep.Count == 0)
+            return "Dish Complete!";
+        return unfinishedPrep[0].prepStageDescription;
+    }
+    public bool TryEatingDish()
+    {
+        if(eatingTime < dishData.eatingTime)
+        {
+            eatingTime += Time.deltaTime;
+            return false;
+        }
 
-public interface IDish
-{
-    public DishState state { get; }
-    public DishData dishData { get; }
-    public void SetDishData(DishData dishData);
-    public Chef assignedChef { get; }
-    public Waiter assignedWaiter { get;}
-    public Customer assignedCustomer { get; }
-}
-
-[Serializable]
-public enum DishState
-{
-    Empty, RawIngredient, Preparing, Completed, DirtyPlate
+        return true;
+    }
 }

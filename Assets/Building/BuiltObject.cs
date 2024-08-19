@@ -18,14 +18,13 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
     Collider2D[] overlapResults;
     public LayerMask mustOverlap;
     public LayerMask mustNotOverlap;
-
     Vector2 boxSize;
     Vector2 boxOffset;
-    public void OnRent()
+    public virtual void OnRent()
     {
         _spriteLayer = GetComponentInChildren<SpriteLayer>();
     }
-    public void OnReturn()
+    public virtual void OnReturn()
     {
         onReturnToPool?.Invoke();
     }
@@ -72,7 +71,7 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(transform.position + (Vector3)boxOffset, boxSize);
     }
-    public void Remove()
+    public virtual void Remove()
     {
         builder.RemoveObject((IBuiltObject)this);
     }

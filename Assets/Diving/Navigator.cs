@@ -34,6 +34,8 @@ public abstract class Navigator : MonoBehaviour, INavigator
     [SerializeField] protected bool movementAllowed;
     protected virtual void Update()
     {
+        if (!agent.isOnNavMesh)
+            return;
         if (!isActiveNavigator)
             return;
         if (!movementAllowed)
@@ -74,6 +76,11 @@ public abstract class Navigator : MonoBehaviour, INavigator
     {
         agent.speed = value;
     }
+
+    public int GetAllowedAreas()
+    {
+        return (int)allowedAreas;
+    }
 }
 public interface INavigator
 {
@@ -82,4 +89,5 @@ public interface INavigator
     public void MovementAllowed(bool value);
     public void SetActiveNavigator(bool value);
     public void SetSpeed(float value);
+    public int GetAllowedAreas();
 }

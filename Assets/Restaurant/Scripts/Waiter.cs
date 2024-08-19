@@ -4,12 +4,6 @@ using UnityEngine;
 using UnityEngine.AI;
 public class Waiter : NavigationSystem
 {
-
-    public bool isIdle;
-    public Transform target;
-
-    public Seat seat;
-
     PointNavigator pointNavigator;
     public enum Task
     {
@@ -19,22 +13,22 @@ public class Waiter : NavigationSystem
         TakingCompletedOrderToTable,
         CleaningTable,
     }
-    //service table means do anything the table needs
     [SerializeField] Task currentTask;
-
-    bool atSeat;
 
     [SerializeField]
     Transform[] arms;
     [SerializeField] Transform holdPoint;
-    [SerializeField, Disable] Order _heldOrder;
-    Customer orderingCustomer;
+    [SerializeField, Disable] List<Order> heldOrders = new();
 
-    float originalSpeed;
+    Table assignedTable;
+    ServingCounter servingCounter;
+    bool nearestServingCounterFound;
+
+    public float runningSpeed;
+    Vector2 servingCounterOrderPos;
     protected override void Start()
     {
         base.Start();
-        isIdle = true;
         pointNavigator = GetComponent<PointNavigator>();
         ActionTextPool.ins.Request(TaskProgressText);
     }
@@ -54,58 +48,83 @@ public class Waiter : NavigationSystem
         {
             SetActiveNavigator(1);
         }
-
-
+        if (!nearestServingCounterFound)
+        {
+            if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, KitchenObject.ObjectID.ServingCounter, out servingCounter))
+            {
+                nearestServingCounterFound = true;
+            }
+        }
         switch (currentTask)
         {
             case Task.Waiting:
+                if (Tables.ins.TryGetRandomTable(Table.State.WaitingToOrder, out assignedTable))
+                {
+                    if(assignedTable.TryAssignWaiter(this, BreakWaiterTableAssignment))
+                    {
+                        currentTask = Task.TakingOrders;
+                        break;
+                    }
+                }
                 break;
             case Task.TakingOrders:
+                SetActiveNavigatorSpeed(runningSpeed);
+                pointNavigator.SetPoint(assignedTable.GetOrderPoint());
+                if(Vector2.Distance(transform.position, assignedTable.GetOrderPoint()) < 0.2f)
+                {
+                    if(assignedTable.TryTakeOrders(this, out heldOrders))
+                    {
+                        foreach (var order in heldOrders)
+                        {
+                            order.AssignedWaiterPickUp(holdPoint);
+                        }
+                        currentTask = Task.OrdersToKitchen;
+                        servingCounterOrderPos = servingCounter.GetIncomingOrderPosition();
+                        break;
+                    }
+                }
                 break;
             case Task.OrdersToKitchen:
+                SetActiveNavigatorSpeed(runningSpeed);
+                Debug.Log($"nearest serving counter found {nearestServingCounterFound}");
+
+                if(nearestServingCounterFound)
+                {
+                    pointNavigator.SetPoint(servingCounterOrderPos);
+                    if(Vector2.Distance(transform.position, servingCounterOrderPos) < 0.2f)
+                    {
+                        if(heldOrders.Count > 0)
+                        {
+                            servingCounter.AddNewOrder(heldOrders[0]);
+                            heldOrders[0].AssignServingCounter(servingCounter);
+                            heldOrders.RemoveAt(0);
+                        }
+                        else
+                        {
+                            currentTask = Task.Waiting;
+                        }
+                    }
+                }
                 break;
             case Task.TakingCompletedOrderToTable:
                 break;
             case Task.CleaningTable:
+                SetActiveNavigatorSpeed(runningSpeed);
                 break;
         }
-        /*if (isIdle)
-        {
-            seat = SeatManager.ins.GetDirtySeat();
-            if (seat != null)
-            {
-                isIdle = false;
-                pointNavigator.SetPoint(seat.dirtPosition);
+    }
 
-            }
-        }
-        if (seat != null)
-        {
-            if (Vector2.Distance(transform.position, seat.dirtPosition) < SeatingParameters.ins.SeatingDistance)
-            {
-                currentTask = WaiterTask.CleaningTable;
-                // Return to waiter queue if no new tasks
-            }
-        }*/
-    }
-    private void OnDisable()
-    {
-        if(seat != null)
-        {
-            seat.ClearTaskWaiter(this);
-        }
-    }
     ActionTextArgs taskProgressText = new();
     ActionTextArgs TaskProgressText()
     {
         taskProgressText.worldPos = transform.position + Vector3.up * 0.5f;
         string[] textLines = { "", "" };
-        if (currentTask == Task.CleaningTable && seat != null && atSeat)
-        {
-            textLines[0] = "Cleaning";
-            textLines[1] = $"{(int)Mathf.Lerp(100, 0, seat.dirtAmount)}%";
-        }
         taskProgressText.textLines = textLines;
         return taskProgressText;
+    }
+    void BreakWaiterTableAssignment()
+    {
+        currentTask = Task.Waiting;
+        assignedTable = null;
     }
 }

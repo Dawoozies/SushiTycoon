@@ -6,6 +6,7 @@ using UnityEngine;
 public class DishData : ScriptableObject
 {
     public float priceBase;
+    public float eatingTime;
     //recipe
     //stage of prep 0 - collectable0,amount0
     //stage of prep 1 - collectable0,amount1
@@ -21,6 +22,7 @@ public class PreperationStage
     public CollectableData ingredient;
     public int ingredientAmount;
     public float stageTime;
+    public KitchenObject.ObjectID requiredPrepStation;
 }
 
 [Serializable]

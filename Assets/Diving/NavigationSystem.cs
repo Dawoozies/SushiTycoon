@@ -47,7 +47,15 @@ public abstract class NavigationSystem : MonoBehaviour
     {
         if(agent == null)
             agent = GetComponent<NavMeshAgent>();
+        if(taskNavigators == null)
+            taskNavigators = GetComponents<INavigator>();
 
-        agent.Warp(point);
+        INavigator activeNavigator = taskNavigators[currentNavigator];
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(point, out hit, 5f, (int)activeNavigator.GetAllowedAreas()))
+        {
+            agent.Warp(point);
+        }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class PrefabSwapper : MonoBehaviour
 {
     public ObjectBuilder builder;
-    public GameObject[] prefabs;
+    [ReorderableList] public GameObject[] prefabs;
     int currentPrefab;
     int _currentPrefab;
     private void Update()

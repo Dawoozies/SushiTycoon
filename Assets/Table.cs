@@ -8,6 +8,7 @@ public class Table : MonoBehaviour
 {
     [ReorderableList] public Transform[] seatingPoints;
     [ReorderableList] public Transform[] platingPoints;
+    [SerializeField] Transform orderPoint;
     List<object> atTable = new();
     Action leaveTableAction;
     public enum State
@@ -24,8 +25,9 @@ public class Table : MonoBehaviour
     Waiter assignedWaiter;
     Action breakWaiterAssignment;
 
-    [SerializeField] List<Order> orders = new();
-    public bool needsWaiter => orders.Count > 0 && assignedWaiter == null;
+    [SerializeField] List<Order> outgoingOrders = new();
+    public bool needsWaiter => outgoingOrders.Count > 0 && assignedWaiter == null;
+    Action orderTakenCallback;
     public void OnRent()
     {
         atTable.Clear();
@@ -49,6 +51,8 @@ public class Table : MonoBehaviour
         leaveTableAction?.Invoke();
         leaveTableAction = null;
 
+        orderTakenCallback = null;
+
         ChangeState(State.Free);
         Tables.ins.RemoveTable(this);
     }
@@ -57,7 +61,7 @@ public class Table : MonoBehaviour
         Tables.ins.SwapState(this, state, newState);
         state = newState;
     }
-    public bool TryAssignWaiter(Waiter waiter, ref Action breakWaiterAssignment)
+    public bool TryAssignWaiter(Waiter waiter, Action breakWaiterAssignment)
     {
         if (assignedWaiter != null && assignedWaiter != waiter)
             return false;
@@ -94,12 +98,44 @@ public class Table : MonoBehaviour
         seatPosition = seatingPoints[indexOfSeat].position;
         return true;
     }
-    public void CreateUnfinishedOrder(Customer customer, List<DishData> pickedDishes, out Order awaitingOrder)
+    public void CreateUnfinishedOrder(Customer customer, List<DishData> pickedDishes, out Order awaitingOrder, Action orderTakenCallback)
     {
         awaitingOrder = SharedGameObjectPool.Rent(RestaurantParameters.ins.OrderPrefab).GetComponent<Order>();
         awaitingOrder.CustomerCreateOrder(customer, pickedDishes);
-        orders.Add(awaitingOrder);
+        outgoingOrders.Add(awaitingOrder);
         ChangeState(State.WaitingToOrder);
+        this.orderTakenCallback += orderTakenCallback;
+    }
+    public bool TryTakeOrders(Waiter waiter, out List<Order> orders)
+    {
+        orders = null;
+        if (assignedWaiter != null && assignedWaiter != waiter)
+            return false;
+        if (outgoingOrders == null || outgoingOrders.Count == 0)
+            return false;
+
+        orders = new List<Order>();
+        foreach (Order order in outgoingOrders)
+        {
+            orders.Add(order);
+        }
+
+        orderTakenCallback?.Invoke();
+        orderTakenCallback = null;
+
+        outgoingOrders.Clear();
+
+        //once order is taken remove waiter assignment from here
+        assignedWaiter = null;
+        breakWaiterAssignment = null;
+
+        ChangeState(State.WaitingForCompletedOrders);
+
+        return true;
+    }
+    public Vector2 GetOrderPoint()
+    {
+        return orderPoint.position;
     }
 }
 public struct SeatingData

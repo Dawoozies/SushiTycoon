@@ -13,7 +13,7 @@ public class MoveInDirectionNavigator : Navigator
     }
     public override void Navigate()
     {
-        if (!movementAllowed || !isActiveNavigator)
+        if (!agent.isOnNavMesh || !movementAllowed || !isActiveNavigator)
             return;
         Vector3 p = transform.position + moveDirection;
         NavMeshHit hit;
