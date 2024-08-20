@@ -23,6 +23,8 @@ public class RestaurantParameters : MonoBehaviour
     public LayerMask AllBuiltObjectsLayerMask;
     public float ValidOrderTakingDistance = 0.75f;
     public float ServingCounterAddOrderDistance;
+    public float SingleDishCleaningTime;
+    public float TotalCash;
     public List<DishData> Menu;
 
     public DishData GetRandomMenuItem()
@@ -49,5 +51,9 @@ public class RestaurantParameters : MonoBehaviour
     public int GetRandomMenuOrderAmount()
     {
         return Random.Range(CustomerMenuOrderAmountBounds.x, CustomerMenuOrderAmountBounds.y+1);
+    }
+    public void CustomerPayBill(float billTotal)
+    {
+        TotalCash += billTotal;
     }
 }

@@ -16,13 +16,11 @@ public class Chef : NavigationSystem
     [SerializeField] Transform[] arms;
     [SerializeField] Transform holdPoint;
 
-    [SerializeField,Disable] ServingCounter servingCounter;
+    [SerializeField, Disable] ServingCounter servingCounter;
     [SerializeField, Disable] bool nearestServingCounterFound;
-    //we complete a dish we use the callback to send it to the order as completed
-    [SerializeField, Disable] Order assignedOrder;
-    [SerializeField, Disable] Dish assignedDish;
-    Action<Chef, Dish> dishCompleteCallback;
-    Vector2 servingCounterDishPos;
+
+    Func<Dish> workFunc;
+    [SerializeField] float runningSpeed;
     protected override void Start()
     {
         base.Start();
@@ -43,8 +41,8 @@ public class Chef : NavigationSystem
                 break;
             case Task.CookingDish:
                 //display what prep is happening
-                textLines[0] = $"Cooking Dish : {assignedDish.DishNameText()}";
-                textLines[1] = assignedDish.PrepDescriptionText();
+                //textLines[0] = $"Cooking Dish : {assignedDish.DishNameText()}";
+                //textLines[1] = assignedDish.PrepDescriptionText();
                 break;
         }
         taskProgressText.textLines = textLines;
@@ -76,29 +74,34 @@ public class Chef : NavigationSystem
             case Task.Waiting:
                 if(nearestServingCounterFound)
                 {
-                    if(servingCounter.TryAssignChefToAnOutstandingOrder(this, out assignedDish, out assignedOrder, out dishCompleteCallback))
+                    //get the goddamn dish
+                    if(servingCounter.TryGetWork(ref workFunc))
                     {
                         currentTask = Task.CookingDish;
-                        assignedDish.transform.parent = holdPoint;
-                        assignedDish.transform.localPosition = Vector2.zero;
+                        workFunc().transform.parent = holdPoint;
+                        workFunc().transform.localPosition = Vector3.zero;
+                        Debug.Log("Got work func properly");
+                        break;
                     }
                 }
                 break;
             case Task.CookingDish:
-                if(assignedDish.TryPrepDish())
+                pointNavigator.SetSpeed(runningSpeed);
+                Vector2 prepPosition;
+                if(workFunc().TryPrepDish(out prepPosition, transform.position))
                 {
                     currentTask = Task.MovingDishToServingCounter;
-                    servingCounterDishPos = servingCounter.GetIncomingDishPosition();
+                    Debug.LogError("COMPLETED DISH");
                 }
+                pointNavigator.SetPoint(prepPosition);
                 break;
             case Task.MovingDishToServingCounter:
-                pointNavigator.SetPoint(servingCounterDishPos);
-                if(Vector2.Distance(transform.position, servingCounterDishPos) < 0.2f)
+                pointNavigator.SetSpeed(runningSpeed);
+                pointNavigator.SetPoint(servingCounter.GetIncomingDishPosition());
+                if (Vector2.Distance(transform.position, servingCounter.GetIncomingDishPosition()) < 0.125f)
                 {
-                    servingCounter.AddNewDish(assignedDish);
-                    dishCompleteCallback?.Invoke(this, assignedDish);
-                    assignedDish = null;
-                    assignedOrder = null;
+                    servingCounter.AddNewDish(workFunc());
+                    workFunc = null;
                     currentTask = Task.Waiting;
                 }
                 break;

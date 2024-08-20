@@ -28,6 +28,7 @@ public class Table : MonoBehaviour
     [SerializeField] List<Order> outgoingOrders = new();
     public bool needsWaiter => outgoingOrders.Count > 0 && assignedWaiter == null;
     Action orderTakenCallback;
+    float cleaningTime;
     public void OnRent()
     {
         atTable.Clear();
@@ -98,6 +99,18 @@ public class Table : MonoBehaviour
         seatPosition = seatingPoints[indexOfSeat].position;
         return true;
     }
+    public bool TryGetDishPosition(object o, out Vector2 dishPosition)
+    {
+        dishPosition = Vector2.zero;
+        if (atTable == null || atTable.Count == 0)
+            return false;
+        if(!atTable.Contains(o))
+            return false;
+
+        int indexOfDish = atTable.IndexOf(o);
+        dishPosition = platingPoints[indexOfDish].position;
+        return true;
+    }
     public void CreateUnfinishedOrder(Customer customer, List<DishData> pickedDishes, out Order awaitingOrder, Action orderTakenCallback)
     {
         awaitingOrder = SharedGameObjectPool.Rent(RestaurantParameters.ins.OrderPrefab).GetComponent<Order>();
@@ -136,6 +149,39 @@ public class Table : MonoBehaviour
     public Vector2 GetOrderPoint()
     {
         return orderPoint.position;
+    }
+    List<Dish> dishesOnTable = new();
+    public void SetTableDirty()
+    {
+        atTable.Clear();
+        ChangeState(State.Dirty);
+        cleaningTime = 0f;
+        Dish[] dishes = GetComponentsInChildren<Dish>();
+        foreach (var dish in dishes)
+        {
+            dishesOnTable.Add(dish);
+        }
+    }
+    public bool CleanTable()
+    {
+        if(cleaningTime < RestaurantParameters.ins.SingleDishCleaningTime)
+        {
+            cleaningTime += Time.deltaTime;
+        }
+        else
+        {
+            dishesOnTable[0].transform.parent = null;
+            SharedGameObjectPool.Return(dishesOnTable[0].gameObject);
+            dishesOnTable.RemoveAt(0);
+            cleaningTime = 0f;
+        }
+
+        if(dishesOnTable.Count > 0)
+        {
+            return false;
+        }
+        ChangeState(State.Free);
+        return true;
     }
 }
 public struct SeatingData

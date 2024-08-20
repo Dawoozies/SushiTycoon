@@ -40,6 +40,9 @@ public class KitchenObjects : MonoBehaviour
         if (!kitchenObjects.ContainsKey(id))
             return false;
 
+        if (kitchenObjects[id].Count == 0)
+            return false;
+
         sqrDistLookUpTable.Clear();
         kitchenObjects[id].Sort((KitchenObject a, KitchenObject b) =>
         {

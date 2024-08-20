@@ -2,38 +2,68 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 public class Dish : MonoBehaviour
 {
-    [SerializeField, Disable] Chef assignedChef;
+    //[SerializeField, Disable] Chef assignedChef;
     [SerializeField, Disable] DishData dishData;
     [SerializeField, Disable] List<PreperationStage> unfinishedPrep = new();
     float stageTime;
     float eatingTime;
-    public void InitializeDish(Chef initializingChef, DishData dishData)
+    public UnityEvent onDishCreated;
+    Action<Dish> onDishCompleted;
+    //should this only be initialized by order?
+    Customer assignedCustomer;
+    public Vector2 customerPos => assignedCustomer.transform.position;
+    public bool customerReadyForAnotherDish => assignedCustomer.currentTask == Customer.Task.WaitingForOrder;
+    Action<Dish> onDishEaten;
+    public void InitializeDish(Customer assignedCustomer, DishData dishData, Action<Dish> onDishCompletedCallback)
     {
-        assignedChef = initializingChef;
-        this.dishData = dishData;
         unfinishedPrep.Clear();
+        stageTime = 0f;
+        eatingTime = 0f;
+        this.dishData = dishData;
         foreach (PreperationStage prepStage in dishData.preparation)
         {
             unfinishedPrep.Add(prepStage);
         }
+        this.assignedCustomer = assignedCustomer;
+        onDishCompleted = onDishCompletedCallback;
+        onDishCreated?.Invoke();
     }
-    public bool TryPrepDish()
+    public bool TryPrepDish(out Vector2 prepPos, Vector2 handlerPos)
     {
+        prepPos = Vector2.zero;
         if(unfinishedPrep.Count > 0)
         {
-            if(stageTime < unfinishedPrep[0].stageTime)
+            Transform prepTransform;
+            bool hasPrepStation = true;
+            if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, unfinishedPrep[0].requiredPrepStation, out prepTransform))
             {
-                stageTime += Time.deltaTime;
+                prepPos = prepTransform.position;
             }
             else
             {
-                unfinishedPrep.RemoveAt(0);
-                stageTime = 0f;
+                hasPrepStation = false;
+            }
+
+            if(hasPrepStation && Vector2.Distance(handlerPos, prepPos) < 0.2f)
+            {
+                if (stageTime < unfinishedPrep[0].stageTime)
+                {
+                    stageTime += Time.deltaTime;
+                }
+                else
+                {
+                    unfinishedPrep.RemoveAt(0);
+                    stageTime = 0f;
+                }
             }
             return false;
         }
+
+        onDishCompleted?.Invoke(this);
+        onDishCompleted = null;
         return true;
     }
     public string DishNameText()
@@ -53,7 +83,16 @@ public class Dish : MonoBehaviour
             eatingTime += Time.deltaTime;
             return false;
         }
-
+        onDishEaten?.Invoke(this);
+        onDishEaten = null;
         return true;
+    }
+    public void GiveCustomerCompletedDish()
+    {
+        assignedCustomer.GiveCompletedDish(this, TryEatingDish);
+    }
+    public void RegisterOnEatenCallback(Action<Dish> dishEatenAction)
+    {
+        onDishEaten += dishEatenAction;
     }
 }

@@ -68,7 +68,9 @@ public class PolygonPositionArray
     {
         pos = Vector2.zero;
         if (positions == null || index >= positions.Length)
+        {
             return false;
+        }
 
         pos = positions[index];
 

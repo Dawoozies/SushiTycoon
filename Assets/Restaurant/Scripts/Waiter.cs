@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +11,8 @@ public class Waiter : NavigationSystem
         Waiting,
         TakingOrders,
         OrdersToKitchen,
-        TakingCompletedOrderToTable,
+        GetCompletedDish,
+        TakingCompletedDishToTable,
         CleaningTable,
     }
     [SerializeField] Task currentTask;
@@ -26,6 +28,8 @@ public class Waiter : NavigationSystem
 
     public float runningSpeed;
     Vector2 servingCounterOrderPos;
+
+    Func<Dish> workFunc;
     protected override void Start()
     {
         base.Start();
@@ -58,6 +62,16 @@ public class Waiter : NavigationSystem
         switch (currentTask)
         {
             case Task.Waiting:
+                if(Tables.ins.TryGetRandomTable(Table.State.Dirty, out assignedTable))
+                {
+                    currentTask = Task.CleaningTable;
+                    break;
+                }
+                if (nearestServingCounterFound && servingCounter.TryGetCompletedDish(ref workFunc))
+                {
+                    currentTask = Task.GetCompletedDish;
+                    break;
+                }
                 if (Tables.ins.TryGetRandomTable(Table.State.WaitingToOrder, out assignedTable))
                 {
                     if(assignedTable.TryAssignWaiter(this, BreakWaiterTableAssignment))
@@ -72,14 +86,13 @@ public class Waiter : NavigationSystem
                 pointNavigator.SetPoint(assignedTable.GetOrderPoint());
                 if(Vector2.Distance(transform.position, assignedTable.GetOrderPoint()) < 0.2f)
                 {
-                    if(assignedTable.TryTakeOrders(this, out heldOrders))
+                    if (assignedTable.TryTakeOrders(this, out heldOrders))
                     {
                         foreach (var order in heldOrders)
                         {
-                            order.AssignedWaiterPickUp(holdPoint);
+                            order.WaiterPickUp(holdPoint);
                         }
                         currentTask = Task.OrdersToKitchen;
-                        servingCounterOrderPos = servingCounter.GetIncomingOrderPosition();
                         break;
                     }
                 }
@@ -87,16 +100,14 @@ public class Waiter : NavigationSystem
             case Task.OrdersToKitchen:
                 SetActiveNavigatorSpeed(runningSpeed);
                 Debug.Log($"nearest serving counter found {nearestServingCounterFound}");
-
                 if(nearestServingCounterFound)
                 {
-                    pointNavigator.SetPoint(servingCounterOrderPos);
-                    if(Vector2.Distance(transform.position, servingCounterOrderPos) < 0.2f)
+                    pointNavigator.SetPoint(servingCounter.GetIncomingOrderPosition());
+                    if (Vector2.Distance(transform.position, servingCounter.GetIncomingOrderPosition()) < 0.2f)
                     {
-                        if(heldOrders.Count > 0)
+                        if (heldOrders.Count > 0)
                         {
                             servingCounter.AddNewOrder(heldOrders[0]);
-                            heldOrders[0].AssignServingCounter(servingCounter);
                             heldOrders.RemoveAt(0);
                         }
                         else
@@ -106,10 +117,41 @@ public class Waiter : NavigationSystem
                     }
                 }
                 break;
-            case Task.TakingCompletedOrderToTable:
+            case Task.GetCompletedDish:
+                SetActiveNavigatorSpeed(runningSpeed);
+                pointNavigator.SetPoint(workFunc().transform.position);
+                if(Vector2.Distance(transform.position, workFunc().transform.position) < 0.125f)
+                {
+                    workFunc().transform.parent = holdPoint;
+                    workFunc().transform.localPosition = Vector2.zero;
+                    currentTask = Task.TakingCompletedDishToTable;
+                    break;
+                }
+                //pointNavigator.SetPoint(workFunc().customerPos);
+                break;
+            case Task.TakingCompletedDishToTable:
+                SetActiveNavigatorSpeed(runningSpeed);
+                pointNavigator.SetPoint(workFunc().customerPos);
+                if (Vector2.Distance(transform.position, workFunc().customerPos) < 0.125f)
+                {
+                    workFunc().GiveCustomerCompletedDish();
+                    workFunc = null;
+                    currentTask = Task.Waiting;
+                    break;
+                }
                 break;
             case Task.CleaningTable:
                 SetActiveNavigatorSpeed(runningSpeed);
+                pointNavigator.SetPoint(assignedTable.transform.position);
+                if(Vector2.Distance(transform.position, assignedTable.transform.position) < 0.2f)
+                {
+                    if(assignedTable.CleanTable())
+                    {
+                        assignedTable = null;
+                        currentTask = Task.Waiting;
+                        break;
+                    }
+                }
                 break;
         }
     }

@@ -9,6 +9,8 @@ public class KitchenObject : BuiltObject
     {
         ServingCounter,
         Fridge,
+        CookingStation,
+        PrepTable,
     }
     public ObjectID objectId;
     public override void Build()

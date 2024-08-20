@@ -12,38 +12,34 @@ public class ServingCounter : MonoBehaviour
     int nextFreeDishIndex;
     [SerializeField] PolygonPositionArray dishPositions;
     float _spacesDistanceDishes;
-
-    //the key is how much prep is left for the order
-    //chefs will prioritise orders which can be finished quicker
-    [SerializeField] SerializedDictionary<int, List<Order>> outstandingOrders = new();
-    private void Awake()
-    {
-        orderPositions.RecomputePositions();
-        dishPositions.RecomputePositions();
-    }
+    [SerializeField, ReorderableList] List<Order> orders = new();
+    //[SerializeField] SerializedDictionary<int, List<Order>> outstandingOrders = new();
+    [SerializeField, ReorderableList] List<Dish> completedDishesReady = new();
     public void AddNewOrder(Order order)
     {
         orderPositions.RecomputePositions();
 
-        order.transform.parent = transform;
-        order.transform.position = GetIncomingOrderPosition();
-
-        AddOutstandingOrder(order, order.GetDishesToComplete());
+        orders.Add(order);
 
         nextFreeOrderIndex++;
-        if (nextFreeOrderIndex >= 100)
+        if (nextFreeOrderIndex >= orderPositions.positions.Length)
             nextFreeOrderIndex = 0;
+
+        order.transform.parent = transform;
+        order.transform.position = GetIncomingOrderPosition();
     }
     public void AddNewDish(Dish dish)
     {
         dishPositions.RecomputePositions();
 
-        dish.transform.parent = transform;
-        dish.transform.position = GetIncomingDishPosition();
+        completedDishesReady.Add(dish);
 
         nextFreeDishIndex++;
-        if (nextFreeDishIndex >= 100)
+        if (nextFreeDishIndex >= dishPositions.positions.Length)
             nextFreeDishIndex = 0;
+
+        dish.transform.parent = transform;
+        dish.transform.position = GetIncomingDishPosition();
     }
     public Vector2 GetIncomingOrderPosition()
     {
@@ -52,8 +48,12 @@ public class ServingCounter : MonoBehaviour
         {
             return orderPosition;
         }
+        else
+        {
+            orderPositions.TryGetPositionInQueue_Distance(0, out orderPosition);
+        }
 
-        return Vector2.zero;
+        return orderPosition;
     }
     public Vector2 GetIncomingDishPosition()
     {
@@ -62,70 +62,48 @@ public class ServingCounter : MonoBehaviour
         {
             return dishPosition;
         }
-        return Vector2.zero;
-    }
-    public void UpdateDishesLeftForOrder(Order order, int oldDishesLeftToComplete, int newDishesLeftToComplete)
-    {
-        if(outstandingOrders.ContainsKey(oldDishesLeftToComplete))
-        {
-            if (outstandingOrders[oldDishesLeftToComplete].Contains(order))
-                outstandingOrders[oldDishesLeftToComplete].Remove(order);
-        }
-        if(!outstandingOrders.ContainsKey(newDishesLeftToComplete))
-        {
-            AddOutstandingOrder(order, newDishesLeftToComplete);
-            return;
-        }
-        outstandingOrders[newDishesLeftToComplete].Add(order);
-    }
-    public void AddOutstandingOrder(Order order, int dishesToComplete)
-    {
-        if(outstandingOrders.ContainsKey(dishesToComplete))
-        {
-            outstandingOrders[dishesToComplete].Add(order);
-        }
         else
         {
-            outstandingOrders.Add(dishesToComplete, new List<Order> { order });
+            dishPositions.TryGetPositionInQueue_Distance(0, out dishPosition);
         }
+        return dishPosition;
     }
-    public bool TryAssignChefToAnOutstandingOrder(Chef assignedChef, out Dish dish, out Order order, out Action<Chef, Dish> dishCompleteCallback)
+    public bool TryGetWork(ref Func<Dish> workFunc)
     {
-        dish = null;
-        order = null;
-        dishCompleteCallback = null;
-
-        //look at outstanding orders
-        //if (outstandingOrders.Keys.Count == 0)
-        //    return false;
-        //if (outstandingOrders.Keys.Count == 1 && outstandingOrders.ContainsKey(0))
-        //    return false;
-
-        foreach (int key in outstandingOrders.Keys)
+        Debug.Log("Trying to get work");
+        foreach (Order order in orders)
         {
-            if (key == 0)
+            if(order.TryAssignWork(out workFunc))
             {
-                Debug.Log($"key = {key}");
-                continue;
+                return true;
             }
-            //the next one will straight up be the smallest ones
-            foreach (Order outstandingOrder in outstandingOrders[key])
-            {
-                if(outstandingOrder.TryAssignChefToDish(assignedChef, ref dish, ref order, ref dishCompleteCallback))
-                {
-                    //must terminate in here
-                    Debug.LogError($"dish{dish.DishNameText()}  order{order.name} key = {key}");
-                    return true;
-                }
-            }
-            Debug.Log($"key = {key}");
         }
         return false;
     }
-    //public bool TryAssignWaiterToCompletedDish(Waiter assignedWaiter, out Dish dish, out Order order, out Action<Waiter, Dish, Order> dishDeliveredCallback)
-    //{
-    //    dish = null;
-    //    order = null;
-    //    dishDeliveredCallback = null;
-    //}
+    public bool TryGetCompletedDish(ref Func<Dish> workFunc)
+    {
+        workFunc = () => { return null; };
+        if(completedDishesReady.Count == 0)
+            return false;
+
+        //we have to check if customer is still eating something else
+        int dishToSendOut = 0;
+        foreach (Dish completedDish in completedDishesReady)
+        {
+            if(completedDish.customerReadyForAnotherDish)
+            {
+                Dish dish = completedDish;
+                workFunc = () => { return dish; };
+                dishToSendOut = completedDishesReady.IndexOf(completedDish);
+                completedDishesReady.RemoveAt(dishToSendOut);
+                return true;
+            }
+        }
+        return false;
+    }
+    public void OnBuild()
+    {
+        orderPositions.RecomputePositions();
+        dishPositions.RecomputePositions();
+    }
 }

@@ -18,7 +18,6 @@ public class Customer : NavigationSystem
         HasDecidedOrder,
         WaitingForOrder,
         Eating,
-        NeedsBill,
         Leaving,
     }
     public Task currentTask;
@@ -46,6 +45,8 @@ public class Customer : NavigationSystem
 
     float orderTime;
     Order awaitingOrder;
+    Func<bool> eatingFunc;
+    float totalOrderPrice;
     protected override void Start()
     {
         base.Start();
@@ -81,14 +82,11 @@ public class Customer : NavigationSystem
                 textLines[0] = "Order:";
                 for (int i = 0; i < dishNames.Length; i++)
                 {
-                    textLines[i+1] = dishNames[i];
+                    textLines[i + 1] = dishNames[i];
                 }
                 break;
             case Task.Eating:
                 textLines[0] = "Enjoying Succulent Meal";
-                break;
-            case Task.NeedsBill:
-                textLines[0] = "Waiting For Bill";
                 break;
         }
         actionTextArgs.textLines = textLines;
@@ -177,8 +175,7 @@ public class Customer : NavigationSystem
             case Task.WaitingForOrder:
                 break;
             case Task.Eating:
-                break;
-            case Task.NeedsBill:
+                eatingFunc();
                 break;
         }
     }
@@ -193,7 +190,6 @@ public class Customer : NavigationSystem
         moveInDirectionNavigator.SetMoveDirection(moveDir);
         transform.position = spawnPos;
         //Warp(spawnPos);
-
         patience = RestaurantParameters.ins.GetRandomPatience();
     }
     void OnDespawnDetected(Collider2D despawnCollider)
@@ -228,11 +224,43 @@ public class Customer : NavigationSystem
     void CreateOrderToTable()
     {
         List<DishData> pickedDishes = RestaurantParameters.ins.GetRandomMenuItems(RestaurantParameters.ins.GetRandomMenuOrderAmount());
+        totalOrderPrice = 0f;
+        foreach (DishData pickedDish in pickedDishes)
+        {
+            totalOrderPrice += pickedDish.priceBase;
+        }
         assignedTable.CreateUnfinishedOrder(this, pickedDishes, out awaitingOrder, OrderTakenCallback);
     }
     void OrderTakenCallback()
     {
         Debug.Log("Customer waiting for order now");
+        currentTask = Task.WaitingForOrder;
+    }
+    public void GiveCompletedDish(Dish completedDish, Func<bool> eatingFunc)
+    {
+        Vector2 dishPos;
+        if(assignedTable.TryGetDishPosition(this, out dishPos))
+        {
+            completedDish.transform.parent = assignedTable.transform;
+            completedDish.transform.position = dishPos;
+            this.eatingFunc = eatingFunc;
+            currentTask = Task.Eating;
+        }
+    }
+    public void LastDishOfOrderEaten(Order order)
+    {
+        if(awaitingOrder == order)
+        {
+            //THEN WE HAVE FINISHED EATING!!!
+            assignedTable.SetTableDirty();
+            awaitingOrder = null;
+            RestaurantParameters.ins.CustomerPayBill(totalOrderPrice);
+            totalOrderPrice = 0f;
+            LeaveTable();
+        }
+    }
+    public void DishOfOrderEatenButOrderNotFinished()
+    {
         currentTask = Task.WaitingForOrder;
     }
 }
