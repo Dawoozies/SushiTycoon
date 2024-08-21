@@ -16,6 +16,7 @@ public class Dish : MonoBehaviour
     Customer assignedCustomer;
     public Vector2 customerPos => assignedCustomer.transform.position;
     public bool customerReadyForAnotherDish => assignedCustomer.currentTask == Customer.Task.WaitingForOrder;
+    public bool customerAlreadyBeingGivenAnotherDish;
     Action<Dish> onDishEaten;
     public void InitializeDish(Customer assignedCustomer, DishData dishData, Action<Dish> onDishCompletedCallback)
     {
@@ -89,6 +90,7 @@ public class Dish : MonoBehaviour
     }
     public void GiveCustomerCompletedDish()
     {
+        customerAlreadyBeingGivenAnotherDish = false;
         assignedCustomer.GiveCompletedDish(this, TryEatingDish);
     }
     public void RegisterOnEatenCallback(Action<Dish> dishEatenAction)

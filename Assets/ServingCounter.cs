@@ -90,12 +90,13 @@ public class ServingCounter : MonoBehaviour
         int dishToSendOut = 0;
         foreach (Dish completedDish in completedDishesReady)
         {
-            if(completedDish.customerReadyForAnotherDish)
+            if(completedDish.customerReadyForAnotherDish && !completedDish.customerAlreadyBeingGivenAnotherDish)
             {
                 Dish dish = completedDish;
                 workFunc = () => { return dish; };
                 dishToSendOut = completedDishesReady.IndexOf(completedDish);
                 completedDishesReady.RemoveAt(dishToSendOut);
+                completedDish.customerAlreadyBeingGivenAnotherDish = true;
                 return true;
             }
         }

@@ -170,9 +170,12 @@ public class Table : MonoBehaviour
         }
         else
         {
-            dishesOnTable[0].transform.parent = null;
-            SharedGameObjectPool.Return(dishesOnTable[0].gameObject);
-            dishesOnTable.RemoveAt(0);
+            if(dishesOnTable.Count > 0)
+            {
+                dishesOnTable[0].transform.parent = null;
+                SharedGameObjectPool.Return(dishesOnTable[0].gameObject);
+                dishesOnTable.RemoveAt(0);
+            }
             cleaningTime = 0f;
         }
 

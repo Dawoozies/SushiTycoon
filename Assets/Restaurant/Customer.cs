@@ -45,7 +45,7 @@ public class Customer : NavigationSystem
 
     float orderTime;
     Order awaitingOrder;
-    Func<bool> eatingFunc;
+    List<Func<bool>> eatingFuncs = new();
     float totalOrderPrice;
     protected override void Start()
     {
@@ -175,7 +175,13 @@ public class Customer : NavigationSystem
             case Task.WaitingForOrder:
                 break;
             case Task.Eating:
-                eatingFunc();
+                if(eatingFuncs.Count > 0)
+                {
+                    if (eatingFuncs[0]())
+                    {
+                        eatingFuncs.RemoveAt(0);
+                    }
+                }
                 break;
         }
     }
@@ -243,7 +249,7 @@ public class Customer : NavigationSystem
         {
             completedDish.transform.parent = assignedTable.transform;
             completedDish.transform.position = dishPos;
-            this.eatingFunc = eatingFunc;
+            eatingFuncs.Add(eatingFunc);
             currentTask = Task.Eating;
         }
     }
@@ -255,12 +261,16 @@ public class Customer : NavigationSystem
             assignedTable.SetTableDirty();
             awaitingOrder = null;
             RestaurantParameters.ins.CustomerPayBill(totalOrderPrice);
+            AnimatedTextPool.ins.Request(transform.position + Vector3.up*0.2f, $"+ ${totalOrderPrice}");
             totalOrderPrice = 0f;
             LeaveTable();
         }
     }
     public void DishOfOrderEatenButOrderNotFinished()
     {
-        currentTask = Task.WaitingForOrder;
+        if(eatingFuncs.Count == 0)
+        {
+            currentTask = Task.WaitingForOrder;
+        }
     }
 }
