@@ -26,6 +26,7 @@ public class RestaurantParameters : MonoBehaviour
     public float SingleDishCleaningTime;
     public float TotalCash;
     public float CashDisplayTime;
+
     public List<DishData> Menu;
 
     public DishData GetRandomMenuItem()
