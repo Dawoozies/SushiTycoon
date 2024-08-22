@@ -11,4 +11,7 @@ public interface IBuiltObject
     public void Build();
     public void CheckOverlaps(out bool isOverlappingCorrectArea, out bool isOverlappingIncorrectArea);
     public void Remove();
+    public string itemName { get; }
+    public Sprite sprite { get; }
+    public float itemCost { get; }
 }

@@ -20,6 +20,13 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
     public LayerMask mustNotOverlap;
     Vector2 boxSize;
     Vector2 boxOffset;
+
+    [SerializeField] Sprite objectSprite;
+    public Sprite sprite => objectSprite;
+    [SerializeField] string objectName;
+    public string itemName => objectName;
+    [SerializeField] float objectCost;
+    public float itemCost => objectCost;
     public virtual void OnRent()
     {
         _spriteLayer = GetComponentInChildren<SpriteLayer>();

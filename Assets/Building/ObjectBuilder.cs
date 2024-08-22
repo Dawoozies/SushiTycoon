@@ -17,6 +17,7 @@ public class ObjectBuilder : MonoBehaviour
     GameObject buildObjectInstance;
     public UnityEvent<GameObject> onObjectBuild;
     public UnityEvent<GameObject> onObjectDeleted;
+    [ReorderableList] public GameObject[] prefabs;
     private void Update()
     {
         if (!inBuildMode)
@@ -45,7 +46,7 @@ public class ObjectBuilder : MonoBehaviour
         bool isOverlappingCorrectArea;
         bool isOverlappingIncorrectArea;
         toBuild.CheckOverlaps(out isOverlappingCorrectArea, out isOverlappingIncorrectArea);
-        if (Input.GetMouseButton(0) && isOverlappingCorrectArea && !isOverlappingIncorrectArea)
+        if (Input.GetMouseButton(0) && !OverCanvasCheck.ins.CheckOverCanvas() && isOverlappingCorrectArea && !isOverlappingIncorrectArea)
         {
             BuildObject();
         }
@@ -118,7 +119,6 @@ public class ObjectBuilder : MonoBehaviour
                 toBuild = null;
             }
         }
-
         inBuildMode = value;
     }
     Vector3 debugGridPoint;
