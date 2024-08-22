@@ -18,6 +18,7 @@ public class ObjectBuilder : MonoBehaviour
     public UnityEvent<GameObject> onObjectBuild;
     public UnityEvent<GameObject> onObjectDeleted;
     [ReorderableList] public GameObject[] prefabs;
+    int prefabIndex;
     private void Update()
     {
         if (!inBuildMode)
@@ -84,13 +85,21 @@ public class ObjectBuilder : MonoBehaviour
         }
 
         prefabToBuild = newPrefab;
+        for(int i = 0; i < prefabs.Length; i++)
+        {
+            if (prefabs[i] == newPrefab)
+            {
+                prefabIndex = i;
+                break;
+            }
+        }
     }
     protected void BuildObject()
     {
         if(RestaurantParameters.ins.TryBuyItem(toBuild.itemCost))
         {
             toBuild.buildObjectInstance.transform.parent = buildArea;
-            toBuild.SetBuilder(this);
+            toBuild.SetBuilder(this, prefabIndex);
             toBuild.Build();
 
             onObjectBuild?.Invoke(toBuild.buildObjectInstance);
@@ -123,6 +132,25 @@ public class ObjectBuilder : MonoBehaviour
             }
         }
         inBuildMode = value;
+    }
+    void BuildObjectAtPosition(Vector3 worldPosition)
+    {
+        toBuild.buildObjectInstance.transform.parent = buildArea;
+        toBuild.buildObjectInstance.transform.position = worldPosition;
+        toBuild.SetBuilder(this, prefabIndex);
+        toBuild.Build();
+
+        onObjectBuild?.Invoke(toBuild.buildObjectInstance);
+
+        toBuild = null;
+
+        NavMeshManager.ins.UpdateNavMesh();
+    }
+    public void BuildPrefabWithIndex(int index, Vector3 worldPosition)
+    {
+        ChangePrefabToBuild(prefabs[index]);
+        GetNewInstanceToBuild();
+        BuildObjectAtPosition(worldPosition);
     }
     Vector3 debugGridPoint;
     Vector3 debugBoxSize;

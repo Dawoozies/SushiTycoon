@@ -6,6 +6,7 @@ using uPools;
 public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
 {
     public GameObject buildObjectInstance => gameObject;
+    public int builderPrefabIndex;
     public ObjectBuilder builder => _builder;
     ObjectBuilder _builder;
     public SpriteLayer spriteLayer => _spriteLayer;
@@ -35,14 +36,12 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
     {
         onReturnToPool?.Invoke();
     }
-    public void SetBuilder(ObjectBuilder builder)
+    public void SetBuilder(ObjectBuilder builder, int builderPrefabIndex)
     {
         _builder = builder;
+        this.builderPrefabIndex = builderPrefabIndex;
     }
-    public virtual void Build()
-    {
-        onBuild?.Invoke();
-    }
+
     public virtual void CheckOverlaps(out bool isOnMustOverlap, out bool isOnMustNotOverlap)
     {
         isOnMustOverlap = false;
@@ -78,10 +77,18 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(transform.position + (Vector3)boxOffset, boxSize);
     }
+    public virtual void Build()
+    {
+        onBuild?.Invoke();
+        //send my data to BuiltObjects
+        BuiltObjects.ins.AddToBuiltObjects(_builder, this);
+    }
     public virtual void Remove()
     {
         builder.RemoveObject((IBuiltObject)this);
         RestaurantParameters.ins.SellItem(itemCost);
+        //remove my data from BuiltObjects
+        BuiltObjects.ins.RemoveFromBuiltObjects(this);
     }
 }
 
