@@ -87,15 +87,18 @@ public class ObjectBuilder : MonoBehaviour
     }
     protected void BuildObject()
     {
-        toBuild.buildObjectInstance.transform.parent = buildArea;
-        toBuild.SetBuilder(this);
-        toBuild.Build();
+        if(RestaurantParameters.ins.TryBuyItem(toBuild.itemCost))
+        {
+            toBuild.buildObjectInstance.transform.parent = buildArea;
+            toBuild.SetBuilder(this);
+            toBuild.Build();
 
-        onObjectBuild?.Invoke(toBuild.buildObjectInstance);
+            onObjectBuild?.Invoke(toBuild.buildObjectInstance);
 
-        toBuild = null;
+            toBuild = null;
 
-        NavMeshManager.ins.UpdateNavMesh();
+            NavMeshManager.ins.UpdateNavMesh();
+        }
     }
     public void RemoveObject(IBuiltObject builtObject)
     {

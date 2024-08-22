@@ -26,7 +26,7 @@ public class RestaurantParameters : MonoBehaviour
     public float SingleDishCleaningTime;
     public float TotalCash;
     public float CashDisplayTime;
-
+    public float OpenTime;
     public List<DishData> Menu;
 
     public DishData GetRandomMenuItem()
@@ -57,5 +57,19 @@ public class RestaurantParameters : MonoBehaviour
     public void CustomerPayBill(float billTotal)
     {
         TotalCash += billTotal;
+    }
+    public bool TryBuyItem(float itemCost)
+    {
+        float currentCash = TotalCash;
+        if(currentCash - itemCost < 0)
+        {
+            return false;
+        }
+        TotalCash -= itemCost;
+        return true;
+    }
+    public void SellItem(float itemCost)
+    {
+        TotalCash += itemCost;
     }
 }

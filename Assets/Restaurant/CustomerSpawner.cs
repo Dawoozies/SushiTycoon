@@ -29,8 +29,9 @@ public class CustomerSpawner : MonoBehaviour
     float _spawnTime;
     [SerializeField] AnimationCurve spawnProbabilityCurve;
     [SerializeField, Disable] float currentSpawnChance;
-
     public Transform[] despawners;
+    public bool allowSpawning;
+    float openTime;
     void Start()
     {
         SharedGameObjectPool.Prewarm(prefab, maxCustomers);
@@ -38,6 +39,24 @@ public class CustomerSpawner : MonoBehaviour
     }
     void Update()
     {
+
+        if (openTime < RestaurantParameters.ins.OpenTime)
+        {
+            openTime += Time.deltaTime;
+        }
+        else
+        {
+            if(customersActive <= 0)
+            {
+                openTime = 0f;
+                ModeManager.ins.SwapGameMode(ModeManager.Mode.BuildMode);
+            }
+            allowSpawning = false;
+        }
+
+        if (!allowSpawning)
+            return;
+
         float activePercentage = Mathf.Clamp01((float)customersActive / (float)maxCustomers);
         currentSpawnChance = spawnProbabilityCurve.Evaluate(activePercentage);
         if(_spawnTime > 0)
@@ -110,6 +129,11 @@ public class CustomerSpawner : MonoBehaviour
     {
         int despawnerIndex = Random.Range(0, despawners.Length);
         return despawners[despawnerIndex].position;
+    }
+    public void OnOpenModeEnter()
+    {
+        allowSpawning = true;
+        openTime = 0f;
     }
     void OnDrawGizmosSelected()
     {

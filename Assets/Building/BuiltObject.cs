@@ -81,6 +81,7 @@ public class BuiltObject : MonoBehaviour, IBuiltObject, IPoolCallbackReceiver
     public virtual void Remove()
     {
         builder.RemoveObject((IBuiltObject)this);
+        RestaurantParameters.ins.SellItem(itemCost);
     }
 }
 
