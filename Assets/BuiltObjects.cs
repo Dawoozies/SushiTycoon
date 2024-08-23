@@ -23,22 +23,21 @@ public class BuiltObjects : MonoBehaviour
     public void AddToBuiltObjects(ObjectBuilder objectBuilder, BuiltObject builtObject)
     {
         allBuiltObjects.Add(builtObject);
+        SaveBuiltObjects();
     }
     public void RemoveFromBuiltObjects(BuiltObject builtObject)
     {
         allBuiltObjects.Remove(builtObject);
+        SaveBuiltObjects();
     }
     public void OnApplicationQuit()
     {
-        //save the data
-        SaveBuiltObjects();
+        if(!Application.isEditor)
+        {
+            SaveBuiltObjects();
+        }
     }
-    [ContextMenu("DebugSave")]
-    public void DebugSave()
-    {
-        SaveBuiltObjects();
-    }
-    void SaveBuiltObjects()
+    public void SaveBuiltObjects()
     {
         List<BuiltObjectSaveData> saveData = new();
         foreach (BuiltObject builtObject in allBuiltObjects)
@@ -60,17 +59,16 @@ public class BuiltObjects : MonoBehaviour
     }
     void LoadBuiltObjects()
     {
+        if (!SaveGame.Exists("BuiltObjectsSaveData"))
+            return;
         List<BuiltObjectSaveData> saveData = SaveGame.Load<List<BuiltObjectSaveData>>("BuiltObjectsSaveData");
         if (saveData != null && saveData.Count > 0)
         {
             foreach (BuiltObjectSaveData data in saveData)
             {
-                objectBuilders[data.ObjectBuilderIndex].BuildPrefabWithIndex(data.ObjectBuilderPrefabIndex, data.WorldPosition);
+                Debug.LogError($"objBuilderIndex = {data.ObjectBuilderIndex} objBuilderPrefabIndex = {data.ObjectBuilderPrefabIndex} worldPos = {data.WorldPosition}");
+                objectBuilders[data.ObjectBuilderIndex].ConstructSavedBuiltObject(data.ObjectBuilderPrefabIndex, data.WorldPosition);
             }
-        }
-        else
-        {
-            Debug.Log("Load game failed");
         }
     }
 }

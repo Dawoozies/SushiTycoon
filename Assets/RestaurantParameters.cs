@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using BayatGames.SaveGameFree;
 [ExecuteInEditMode]
 public class RestaurantParameters : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class RestaurantParameters : MonoBehaviour
     private void Awake()
     {
         ins = this;
+        Load();
     }
 
     public float SeatingDistance;
@@ -71,5 +73,28 @@ public class RestaurantParameters : MonoBehaviour
     public void SellItem(float itemCost)
     {
         TotalCash += itemCost;
+    }
+    public void OnDisable()
+    {
+        if (Application.isEditor)
+        {
+            Save();
+        }
+    }
+    public void OnApplicationQuit()
+    {
+        if (!Application.isEditor)
+        {
+            Save();
+        }
+    }
+    void Save()
+    {
+        float totalCashSave = TotalCash;
+        SaveGame.Save("TotalCash", totalCashSave);
+    }
+    void Load()
+    {
+        TotalCash = SaveGame.Load<float>("TotalCash");
     }
 }

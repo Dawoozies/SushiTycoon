@@ -23,6 +23,7 @@ public class BuildSelectionPanel : MonoBehaviour
             if(buildObjectSelect != null)
             {
                 buildObjectSelect.SetUpPrefab(buildObject);
+                buildObjectSelect.RegisterToOnClick(OnSelectButtonClickedHandler);
                 buildSelectionButtons.Add(buildObjectSelect);
             }
         }
@@ -34,5 +35,19 @@ public class BuildSelectionPanel : MonoBehaviour
             button.Return();
         }
         buildSelectionButtons.Clear();
+    }
+    void OnSelectButtonClickedHandler(BuildObjectSelect buttonClicked)
+    {
+        foreach (BuildObjectSelect buildSelectionButton in buildSelectionButtons)
+        {
+            buildSelectionButton.ToggleMask(buildSelectionButton != buttonClicked);
+        }
+    }
+    public void OnBuildCategoryChanged()
+    {
+        foreach (BuildObjectSelect buildSelectionButton in buildSelectionButtons)
+        {
+            buildSelectionButton.ToggleMask(false);
+        }
     }
 }

@@ -133,24 +133,22 @@ public class ObjectBuilder : MonoBehaviour
         }
         inBuildMode = value;
     }
-    void BuildObjectAtPosition(Vector3 worldPosition)
+    public void ConstructSavedBuiltObject(int index, Vector3 worldPosition)
     {
-        toBuild.buildObjectInstance.transform.parent = buildArea;
-        toBuild.buildObjectInstance.transform.position = worldPosition;
-        toBuild.SetBuilder(this, prefabIndex);
-        toBuild.Build();
+        GameObject prefabToBuild = prefabs[index];
+        GameObject poolObj = SharedGameObjectPool.Rent(prefabToBuild);
+        IBuiltObject builtObjectInterface;
+        if(poolObj.TryGetComponent(out builtObjectInterface))
+        {
+            poolObj.transform.parent = buildArea;
+            poolObj.transform.position = worldPosition;
+            builtObjectInterface.SetBuilder(this, index);
+            builtObjectInterface.Build();
 
-        onObjectBuild?.Invoke(toBuild.buildObjectInstance);
+            onObjectBuild?.Invoke(poolObj);
 
-        toBuild = null;
-
+        }
         NavMeshManager.ins.UpdateNavMesh();
-    }
-    public void BuildPrefabWithIndex(int index, Vector3 worldPosition)
-    {
-        ChangePrefabToBuild(prefabs[index]);
-        GetNewInstanceToBuild();
-        BuildObjectAtPosition(worldPosition);
     }
     Vector3 debugGridPoint;
     Vector3 debugBoxSize;
