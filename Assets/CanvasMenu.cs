@@ -10,7 +10,7 @@ public abstract class CanvasMenu : MonoBehaviour, ICanvasMenu
 {
     StateMachine<int> fsm = new StateMachine<int>();
     [SerializeField] RectTransform menuRect;
-    [SerializeField, ReorderableList, InLineEditor] MenuStateRect[] stateRects;
+    [SerializeField, ReorderableList] MenuStateRect[] stateRects;
     MotionHandle menuMotionHandle;
     public int currentState;
     public int previousState;
