@@ -5,7 +5,7 @@ using UnityEngine;
 public class MainCamera : MonoBehaviour
 {
     public static MainCamera ins;
-    Camera c;
+    public Camera cam;
     public Vector2 mouseScreenPos;
     public Vector2 mouseWorldPos;
     public Vector2 mouseDelta;
@@ -24,40 +24,45 @@ public class MainCamera : MonoBehaviour
     }
     public Side side;
     public Side currentSideBeingDragged;
+    Vector2 cameraShift;
     private void Awake()
     {
         ins = this;
-        c = GetComponentInChildren<Camera>();
     }
     public Vector3 WorldToScreenSpace(Vector3 worldPos)
     {
-        Vector3 screenPos = sideCameras[(int)side].WorldToScreenPoint(worldPos);
+        Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
         screenPos.z = 0f;
         return screenPos;
     }
     public Vector3 ScreenToWorldSpace(Vector3 screenPos)
     {
-        Vector3 worldPos = sideCameras[(int)side].ScreenToWorldPoint(screenPos);
+        Vector3 worldPos = cam.ScreenToWorldPoint((Vector2)screenPos + cameraShift);
         worldPos.z = 0f;
         return worldPos;
     }
     private void Update()
     {
         //click and drag?
-        float screenWidth = c.scaledPixelWidth;
+        float screenWidth = cam.scaledPixelWidth;
 
         mouseScreenPos = Input.mousePosition;
-
+        cameraShift = Vector2.zero;
         if (mouseScreenPos.x > screenWidth / 2f)
         {
             side = Side.Diving;
+            cameraShift = -Vector2.right * screenWidth / 2f;
+
         }
         else
         {
             side = Side.Restaurant;
+            cameraShift = Vector2.right * screenWidth / 2f;
         }
+        cam.transform.position = sideCameras[(int)side].transform.position;
+        cam.orthographicSize = sideCameras[(int)side].orthographicSize;
 
-        mouseWorldPos = sideCameras[(int)side].ScreenToWorldPoint(mouseScreenPos);
+        mouseWorldPos = cam.ScreenToWorldPoint(mouseScreenPos + cameraShift);
         mouseDelta.x = Input.GetAxis("Mouse X");
         mouseDelta.y = Input.GetAxis("Mouse Y");
 
@@ -89,12 +94,14 @@ public class MainCamera : MonoBehaviour
         {
             return;
         }
-        sideCameras[(int)side].transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, c.orthographicSize))));
+        sideCameras[(int)side].transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, sideCameras[(int)side].orthographicSize))));
     }
     void CameraZoom()
     {
         sideCameras[(int)side].orthographicSize -= mouseScrollDelta.y;
-        sideCameras[(int)side].orthographicSize = Mathf.Clamp(c.orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
+        sideCameras[(int)side].orthographicSize = Mathf.Clamp(sideCameras[(int)side].orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
+
+
 
 /*        cinemachineVirtualCamera.m_Lens.OrthographicSize -= mouseScrollDelta.y;
         cinemachineVirtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(cinemachineVirtualCamera.m_Lens.OrthographicSize, orthographicSizeBounds.x, orthographicSizeBounds.y);*/

@@ -35,7 +35,10 @@ public abstract class Navigator : MonoBehaviour, INavigator
     protected virtual void Update()
     {
         if (!agent.isOnNavMesh)
+        {
+            agent.enabled = !agent.enabled;
             return;
+        }
         if (!isActiveNavigator)
             return;
         if (!movementAllowed)

@@ -19,8 +19,21 @@ public class ObjectBuilder : MonoBehaviour
     public UnityEvent<GameObject> onObjectDeleted;
     [ReorderableList] public GameObject[] prefabs;
     int prefabIndex;
+    bool canBuild;
     private void Update()
     {
+        canBuild = MainCamera.ins.side == MainCamera.Side.Restaurant;
+        if(!canBuild)
+        {
+            if (buildObjectInstance != null)
+            {
+                SharedGameObjectPool.Return(buildObjectInstance);
+                buildObjectInstance = null;
+            }
+            toBuild = null;
+            return;
+        }
+
         if (!inBuildMode)
             return;
 

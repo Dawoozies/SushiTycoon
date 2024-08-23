@@ -11,7 +11,7 @@ public class NavigatorRandomWalk : Navigator
     float _waitTime;
     public override void Navigate()
     {
-        if (!movementAllowed || !isActiveNavigator)
+        if (!movementAllowed || !isActiveNavigator || !isOnNavMesh)
             return;
         if (NeedNewPath() && _waitTime <= 0f)
         {
