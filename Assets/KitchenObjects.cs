@@ -77,4 +77,10 @@ public class KitchenObjects : MonoBehaviour
 
         return true;
     }
+    public bool CheckObjectWithIDExists(KitchenObject.ObjectID id)
+    {
+        if (!kitchenObjects.ContainsKey(id))
+            return false;
+        return kitchenObjects[id].Count > 0;
+    }
 }

@@ -12,6 +12,7 @@ public class Dock : MonoBehaviour
 
     [SerializeField] float workerAssignTime;
     float _workerAssignTime;
+    public float hiringCost;
     [SerializeField, ReorderableList] Transform[] dockPoints;
     public int workerCount;
     [SerializeField, ReorderableList] List<DockWorker> workers = new();
@@ -64,5 +65,12 @@ public class Dock : MonoBehaviour
         dockWorker.transform.parent = transform;
         dockWorker.transform.position = dockSpawnPoint.position + Vector3.right * Random.Range(-0.4f, 0.2f);
         workers.Add(dockWorker);
+    }
+    public void Hire()
+    {
+        if(RestaurantParameters.ins.TryBuyItem(hiringCost))
+        {
+            AddNewDockWorker();
+        }
     }
 }

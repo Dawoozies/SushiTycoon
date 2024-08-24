@@ -165,8 +165,14 @@ public class Customer : NavigationSystem
                 }
                 else
                 {
-                    CreateOrderToTable();
-                    currentTask = Task.HasDecidedOrder;
+                    if(TryCreateOrderToTable())
+                    {
+                        currentTask = Task.HasDecidedOrder;
+                    }
+                    else
+                    {
+                        LeaveTable();
+                    }
                     break;
                 }
                 break;
@@ -227,15 +233,21 @@ public class Customer : NavigationSystem
         currentTask = Task.Leaving;
         pointNavigator.SetPoint(spawner.DespawnerPositionRandom());
     }
-    void CreateOrderToTable()
+    bool TryCreateOrderToTable()
     {
-        List<DishData> pickedDishes = RestaurantParameters.ins.GetRandomMenuItems(RestaurantParameters.ins.GetRandomMenuOrderAmount());
+        List<DishData> pickedDishes;
+        if(!RestaurantParameters.ins.TryGetRandomMenuItems(RestaurantParameters.ins.GetRandomMenuOrderAmount(), out pickedDishes))
+        {
+            return false;
+        }
+
         totalOrderPrice = 0f;
         foreach (DishData pickedDish in pickedDishes)
         {
             totalOrderPrice += pickedDish.priceBase;
         }
         assignedTable.CreateUnfinishedOrder(this, pickedDishes, out awaitingOrder, OrderTakenCallback);
+        return true;
     }
     void OrderTakenCallback()
     {

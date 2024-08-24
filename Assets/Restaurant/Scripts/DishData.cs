@@ -14,6 +14,40 @@ public class DishData : ScriptableObject
     public List<PreperationStage> preparation;
     [ReorderableList]
     public List<AddonsStage> addons;
+    public int AmountAvailable()
+    {
+        int lowestMultiple = int.MaxValue;
+        foreach (PreperationStage prepStage in preparation)
+        {
+            CollectableData ingredient = prepStage.ingredient;
+            int ingredientAmount = prepStage.ingredientAmount;
+            //as soon as we get a multiple result of 0 then we can break
+            int ingredientMultiple = 0;
+            if(IngredientStorage.ins.TryGetIngredientMultiple(ingredient, ingredientAmount, out ingredientMultiple))
+            {
+                if(ingredientMultiple < lowestMultiple)
+                {
+                    lowestMultiple = ingredientMultiple;
+                }
+            }
+
+            if (ingredientMultiple == 0)
+            {
+                lowestMultiple = 0;
+                break;
+            }
+        }
+
+        return lowestMultiple;
+    }
+    public void UseUpIngredients()
+    {
+        foreach (PreperationStage prepStage in preparation)
+        {
+            int amountUsed = 0;
+            IngredientStorage.ins.TryGetIngredients(prepStage.ingredient, prepStage.ingredientAmount, out amountUsed);
+        }
+    }
 }
 [Serializable]
 public class PreperationStage

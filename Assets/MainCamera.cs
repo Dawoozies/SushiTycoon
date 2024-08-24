@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,7 @@ public class MainCamera : MonoBehaviour
 
     [SerializeField] float maximumMouseDelta;
     [SerializeField] Camera[] sideCameras;
+    [SerializeField] Transform[] sideCameraBoundParents;
     public enum Side
     {
         Restaurant,
@@ -87,6 +89,40 @@ public class MainCamera : MonoBehaviour
 
         CameraMovement();
         CameraZoom();
+        CameraBounding();
+    }
+    void CameraBounding()
+    {
+        Transform camTransform = sideCameras[(int)currentSideBeingDragged].transform;
+        Camera sideCam = sideCameras[(int)currentSideBeingDragged];
+        float halfHeight = sideCam.orthographicSize;
+        float halfWidth = halfHeight * sideCam.aspect;
+        Transform bounds = sideCameraBoundParents[(int)currentSideBeingDragged];
+        float camXPos = camTransform.position.x;
+        // 0=right 1=left 2=up 3=down
+        if (currentSideBeingDragged == Side.Restaurant)
+        {
+            camXPos = Mathf.Clamp(
+                camTransform.position.x,
+                bounds.GetChild(1).position.x,
+                bounds.GetChild(0).position.x - halfWidth
+                );
+        }
+        if(currentSideBeingDragged == Side.Diving)
+        {
+            camXPos = Mathf.Clamp(
+                camTransform.position.x,
+                bounds.GetChild(1).position.x + halfWidth,
+                bounds.GetChild(0).position.x
+                );
+        }
+
+        float camYPos = Mathf.Clamp(
+            camTransform.position.y,
+            bounds.GetChild(3).position.y + halfHeight,
+            bounds.GetChild(2).position.y - halfHeight
+            );
+        camTransform.position = new Vector3(camXPos, camYPos, -10);
     }
     void CameraMovement()
     {
@@ -94,14 +130,13 @@ public class MainCamera : MonoBehaviour
         {
             return;
         }
-        sideCameras[(int)side].transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, sideCameras[(int)side].orthographicSize))));
+        sideCameras[(int)currentSideBeingDragged].transform.Translate(-mouseDelta * (cameraMoveSensitivity*cameraMoveSensitivityCurve.Evaluate(Mathf.InverseLerp(orthographicSizeBounds.x, orthographicSizeBounds.y, sideCameras[(int)currentSideBeingDragged].orthographicSize))));
+
     }
     void CameraZoom()
     {
-        sideCameras[(int)side].orthographicSize -= mouseScrollDelta.y;
-        sideCameras[(int)side].orthographicSize = Mathf.Clamp(sideCameras[(int)side].orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
-
-
+        sideCameras[(int)currentSideBeingDragged].orthographicSize -= mouseScrollDelta.y;
+        sideCameras[(int)currentSideBeingDragged].orthographicSize = Mathf.Clamp(sideCameras[(int)currentSideBeingDragged].orthographicSize,orthographicSizeBounds.x,orthographicSizeBounds.y);
 
 /*        cinemachineVirtualCamera.m_Lens.OrthographicSize -= mouseScrollDelta.y;
         cinemachineVirtualCamera.m_Lens.OrthographicSize = Mathf.Clamp(cinemachineVirtualCamera.m_Lens.OrthographicSize, orthographicSizeBounds.x, orthographicSizeBounds.y);*/

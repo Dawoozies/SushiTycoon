@@ -59,7 +59,7 @@ public class Diver : MonoBehaviour
             collectableDetectionCircle.radius = 0.01f;
         }
 
-        if(targetedCollectable != null)
+        if(targetedCollectable != null && currentTask == DiverTask.Collect)
         {
             inCollectionRadius = Vector2.Distance(transform.position, targetedCollectable.position) <= collectionRadius;
             if (inCollectionRadius)
@@ -89,7 +89,18 @@ public class Diver : MonoBehaviour
             inCollectionRadius = false;
         }
 
-        if(currentTask != DiverTask.Resurface && oxygen > 0 && weight < weightCapacity)
+        if (targetedCollectable == null)
+        {
+            currentTask = DiverTask.RandomWalk;
+        }
+
+        if(currentTask == DiverTask.RandomWalk)
+        {
+            if (targetedCollectable != null)
+                currentTask = DiverTask.Collect;
+        }
+
+        if(currentTask != DiverTask.Resurface && oxygen > 0 && weight < weightCapacity && targetedCollectable != null)
         {
             currentTask = DiverTask.Collect;
         }
@@ -195,4 +206,5 @@ public enum DiverTask
 {
     Collect = 0,
     Resurface = 1,
+    RandomWalk = 2,
 }
