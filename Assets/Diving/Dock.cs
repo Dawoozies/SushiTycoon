@@ -24,12 +24,13 @@ public class Dock : MonoBehaviour
             AddNewDockWorker();
         }
     }
-    void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerStay2D(Collider2D other)
     {
         //Debug.Log($"{other.transform.name} enter {gameObject.name}");
         if (other.CompareTag("Boat"))
         {
-            dockedBoat = other.transform.GetComponent<Boat>();
+            if(dockedBoat == null)
+                dockedBoat = other.transform.GetComponent<Boat>();
             foreach (DockWorker worker in workers)
             {
                 worker.BoatEnterDock(dockedBoat);
@@ -41,7 +42,6 @@ public class Dock : MonoBehaviour
         //Debug.Log($"{other.transform.name} exited {gameObject.name}");
         if (other.CompareTag("Boat"))
         {
-            dockedBoat = other.transform.GetComponent<Boat>();
             foreach (DockWorker worker in workers)
             {
                 worker.BoatExitDock();

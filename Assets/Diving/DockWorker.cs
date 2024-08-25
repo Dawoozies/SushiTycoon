@@ -77,7 +77,7 @@ public class DockWorker : MonoBehaviour
     {
         if (holdingSomething)
         {
-            IngredientStorage.ins.AddToStorage(heldCollectable.collectableData, 1);
+            RestaurantParameters.ins.AddToStorage(heldCollectable.collectableData, 1);
             heldCollectable.ReturnToSpawner();
             heldCollectable = null;
             holdingSomething = false;

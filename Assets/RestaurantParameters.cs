@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using BayatGames.SaveGameFree;
 using System.Linq;
-[ExecuteInEditMode]
 public class RestaurantParameters : MonoBehaviour
 {
     public static RestaurantParameters ins;
@@ -11,6 +10,7 @@ public class RestaurantParameters : MonoBehaviour
     private void Awake()
     {
         ins = this;
+        LoadResources();
         Load();
         InitializeMenuDictionary();
     }
@@ -31,8 +31,12 @@ public class RestaurantParameters : MonoBehaviour
     public float TotalCash;
     public float CashDisplayTime;
     public float OpenTime;
+    public int StaffUpperBound;
     public List<DishData> AllDishes = new();
     [SerializeField] SerializedDictionary<DishData, int> Menu = new();
+    [SerializeField] SerializedDictionary<CollectableData, int> ingredients = new();
+    Dictionary<string, CollectableData> CollectableDataLookUp = new();
+    Dictionary<string, int> ingredientSaveData = new();
     void InitializeMenuDictionary()
     {
         Menu.Clear();
@@ -118,6 +122,60 @@ public class RestaurantParameters : MonoBehaviour
     {
         TotalCash += itemCost;
     }
+    public void AddToStorage(CollectableData collectable, int amount)
+    {
+        if (!ingredients.TryAdd(collectable, amount))
+        {
+            ingredients[collectable] += amount;
+        }
+
+        if(!ingredientSaveData.TryAdd(collectable.name, amount))
+        {
+            ingredientSaveData[collectable.name] += amount;
+        }
+
+        UpdateMenu();
+    }
+    public bool TryGetIngredients(CollectableData ingredient, int requestAmount, out int amount)
+    {
+        amount = 0;
+        if (!ingredients.ContainsKey(ingredient))
+            return false;
+        if (ingredients[ingredient] < requestAmount)
+            return false;
+
+        amount = requestAmount;
+        ingredients[ingredient] -= requestAmount;
+
+        return true;
+    }
+    public bool TryGetIngredientMultiple(CollectableData ingredient, int requiredAmount, out int multiple)
+    {
+        multiple = 0;
+        if (!ingredients.ContainsKey(ingredient))
+            return false;
+        if (ingredients[ingredient] < requiredAmount)
+            return false;
+        if (requiredAmount == 0)
+        {
+            //if we dont need any ingredient amount to make this then
+            //it is infinite source
+            //making this 1 for now
+            multiple = 999;
+            return true;
+        }
+
+        int amountInStorage = ingredients[ingredient];
+        while (amountInStorage > 0)
+        {
+            amountInStorage -= requiredAmount;
+            if (amountInStorage >= 0)
+            {
+                multiple++;
+            }
+        }
+        return true;
+    }
     public void OnEnable()
     {
         Load();
@@ -140,9 +198,30 @@ public class RestaurantParameters : MonoBehaviour
     {
         float totalCashSave = TotalCash;
         SaveGame.Save("TotalCash", totalCashSave);
+        SaveGame.Save<Dictionary<string, int>>("ingredientSaveData", ingredientSaveData);
     }
     void Load()
     {
-        TotalCash = SaveGame.Load<float>("TotalCash");
+        if(SaveGame.Exists("TotalCash"))
+            TotalCash = SaveGame.Load<float>("TotalCash");
+        if(SaveGame.Exists("ingredientSaveData"))
+        {
+            ingredientSaveData = SaveGame.Load<Dictionary<string, int>>("ingredientSaveData");
+            ingredients = new();
+            foreach (string ingredientName in ingredientSaveData.Keys)
+            {
+                CollectableData ingredientData = CollectableDataLookUp[ingredientName];
+                ingredients.Add(ingredientData, ingredientSaveData[ingredientName]);
+            }
+            UpdateMenu();
+        }
+    }
+    void LoadResources()
+    {
+        CollectableData[] allCollectableData = Resources.LoadAll<CollectableData>("CollectableData");
+        foreach (CollectableData collectableData in allCollectableData)
+        {
+            CollectableDataLookUp.TryAdd(collectableData.name, collectableData);
+        }
     }
 }
