@@ -11,6 +11,7 @@ public class Order : MonoBehaviour
     [SerializeField, Disable] Customer customer;
     public UnityEvent onOrderCreated;
     public UnityEvent onWaiterPickUp;
+    Action onLastDishEaten;
     public void CustomerCreateOrder(Customer customer, List<DishData> dishes)
     {
         Debug.Log("Customer create order");
@@ -77,6 +78,9 @@ public class Order : MonoBehaviour
             if(dishes.Count == 0)
             {
                 customer.LastDishOfOrderEaten(this);
+                dishList.Clear();
+                onLastDishEaten?.Invoke();
+                onLastDishEaten = null;
                 SharedGameObjectPool.Return(gameObject);
             }
             else
@@ -84,5 +88,9 @@ public class Order : MonoBehaviour
                 customer.DishOfOrderEatenButOrderNotFinished();
             }
         }
+    }
+    public void RegisterOnLastDishEatenCallback(Action a)
+    {
+        onLastDishEaten = a;
     }
 }

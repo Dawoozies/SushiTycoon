@@ -63,10 +63,10 @@ public class Customer : NavigationSystem
         {
             case Task.WalkingOutside:
                 break;
-            case Task.Queue:
-                textLines[0] = "Place In Queue";
-                textLines[1] = fetchQueuePosition(this).queueNumber.ToString();
-                break;
+            //case Task.Queue:
+            //    textLines[0] = "Place In Queue";
+            //    textLines[1] = fetchQueuePosition(this).queueNumber.ToString();
+            //    break;
             case Task.Table:
                 textLines[0] = "Taking Seat At Table";
                 break;
@@ -171,7 +171,7 @@ public class Customer : NavigationSystem
                     }
                     else
                     {
-                        LeaveTable();
+                        LeaveTableNoFoodOnMenu();
                     }
                     break;
                 }
@@ -229,6 +229,13 @@ public class Customer : NavigationSystem
     }
     void LeaveTable()
     {
+        assignedTable = null;
+        currentTask = Task.Leaving;
+        pointNavigator.SetPoint(spawner.DespawnerPositionRandom());
+    }
+    void LeaveTableNoFoodOnMenu()
+    {
+        assignedTable.LeaveTableEarly();
         assignedTable = null;
         currentTask = Task.Leaving;
         pointNavigator.SetPoint(spawner.DespawnerPositionRandom());

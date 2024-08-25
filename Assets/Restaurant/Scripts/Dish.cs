@@ -32,34 +32,54 @@ public class Dish : MonoBehaviour
         onDishCompleted = onDishCompletedCallback;
         onDishCreated?.Invoke();
     }
+
+    KitchenObject currentPrepStation;
+    Action onPrepStationUseCompleted;
+    bool hasAssignedPrepStation;
     public bool TryPrepDish(out Vector2 prepPos, Vector2 handlerPos)
     {
         prepPos = Vector2.zero;
         if(unfinishedPrep.Count > 0)
         {
-            Transform prepTransform;
-            bool hasPrepStation = true;
-            if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, unfinishedPrep[0].requiredPrepStation, out prepTransform))
+            //Transform prepTransform;
+            //bool hasPrepStation = true;
+            //if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, unfinishedPrep[0].requiredPrepStation, out prepTransform))
+            //{
+            //    prepPos = prepTransform.position;
+            //}
+            //else
+            //{
+            //    hasPrepStation = false;
+            //}
+
+            if (!hasAssignedPrepStation && KitchenObjects.ins.TryAssignToClosestFreeObjectWithID(this, transform.position, unfinishedPrep[0].requiredPrepStation, out currentPrepStation, out onPrepStationUseCompleted))
             {
-                prepPos = prepTransform.position;
-            }
-            else
-            {
-                hasPrepStation = false;
+                hasAssignedPrepStation = true;
             }
 
-            if(hasPrepStation && Vector2.Distance(handlerPos, prepPos) < 0.2f)
+            if (hasAssignedPrepStation)
+                prepPos = currentPrepStation.transform.position;
+
+            if (hasAssignedPrepStation && Vector2.Distance(handlerPos, prepPos) < 0.2f)
             {
+                //Debug.Log($"dish{dishData.name} stageTime = {stageTime}");
                 if (stageTime < unfinishedPrep[0].stageTime)
                 {
                     stageTime += Time.deltaTime;
                 }
                 else
                 {
+                    onPrepStationUseCompleted?.Invoke();
                     unfinishedPrep.RemoveAt(0);
                     stageTime = 0f;
+
+                    currentPrepStation = null;
+                    onPrepStationUseCompleted = null;
+                    hasAssignedPrepStation = false;
                 }
             }
+
+
             return false;
         }
 

@@ -20,6 +20,7 @@ public class ServingCounter : MonoBehaviour
         orderPositions.RecomputePositions();
 
         orders.Add(order);
+        order.RegisterOnLastDishEatenCallback(() => { orders.Remove(order); });
 
         nextFreeOrderIndex++;
         if (nextFreeOrderIndex >= orderPositions.positions.Length)

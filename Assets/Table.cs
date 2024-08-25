@@ -29,6 +29,21 @@ public class Table : MonoBehaviour
     public bool needsWaiter => outgoingOrders.Count > 0 && assignedWaiter == null;
     Action orderTakenCallback;
     float cleaningTime;
+    ActionTextArgs actionTextArgs;
+    private void Start()
+    {
+        ActionTextPool.ins.Request(ActionTextDisplay);
+    }
+    ActionTextArgs ActionTextDisplay()
+    {
+        if(actionTextArgs == null)
+            actionTextArgs = new ActionTextArgs();
+        actionTextArgs.worldPos = transform.position + Vector3.up * 0.1f;
+        string[] textLines = { "" };
+        textLines[0] = state.ToString();
+        actionTextArgs.textLines = textLines;
+        return actionTextArgs;
+    }
     public void OnRent()
     {
         atTable.Clear();
@@ -185,6 +200,11 @@ public class Table : MonoBehaviour
         }
         ChangeState(State.Free);
         return true;
+    }
+    public void LeaveTableEarly()
+    {
+        atTable.Clear();
+        ChangeState(State.Free);
     }
 }
 public struct SeatingData

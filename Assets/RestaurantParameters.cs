@@ -89,7 +89,7 @@ public class RestaurantParameters : MonoBehaviour
         {
             dish.UseUpIngredients();
         }
-
+        UpdateMenu();
         return true;
     }
     public float GetRandomOrderingTime()
@@ -146,6 +146,7 @@ public class RestaurantParameters : MonoBehaviour
 
         amount = requestAmount;
         ingredients[ingredient] -= requestAmount;
+        ingredientSaveData[ingredient.name] -= requestAmount;
 
         return true;
     }
