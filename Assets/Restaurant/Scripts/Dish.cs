@@ -18,6 +18,7 @@ public class Dish : MonoBehaviour
     public bool customerReadyForAnotherDish => assignedCustomer.currentTask == Customer.Task.WaitingForOrder;
     public bool customerAlreadyBeingGivenAnotherDish;
     Action<Dish> onDishEaten;
+    [SerializeField] SpriteRenderer dishSprite;
     public void InitializeDish(Customer assignedCustomer, DishData dishData, Action<Dish> onDishCompletedCallback)
     {
         unfinishedPrep.Clear();
@@ -82,7 +83,8 @@ public class Dish : MonoBehaviour
 
             return false;
         }
-
+        dishSprite.sprite = dishData.sprite;
+        dishSprite.color = Color.white;
         onDishCompleted?.Invoke(this);
         onDishCompleted = null;
         return true;
@@ -104,6 +106,8 @@ public class Dish : MonoBehaviour
             eatingTime += Time.deltaTime;
             return false;
         }
+        dishSprite.sprite = null;
+        dishSprite.color = Color.clear;
         onDishEaten?.Invoke(this);
         onDishEaten = null;
         return true;

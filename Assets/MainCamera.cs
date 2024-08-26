@@ -37,11 +37,43 @@ public class MainCamera : MonoBehaviour
         screenPos.z = 0f;
         return screenPos;
     }
+    public Vector3 WorldToSideScreenSpace(Vector3 worldPos, Side sideCamera)
+    {
+        Vector3 cameraSideDifference = sideCameras[(int)sideCamera].transform.position -cam.transform.position;
+        Vector3 p = worldPos - cameraSideDifference;
+        Vector3 screenPos = cam.WorldToScreenPoint(p);
+        Vector3 sideShift = Vector3.zero;
+        float screenWidth = cam.scaledPixelWidth;
+        switch (sideCamera)
+        {
+            case Side.Restaurant:
+                sideShift = -Vector3.right * screenWidth / 2f;
+                break;
+            case Side.Diving:
+                sideShift = Vector3.right * screenWidth / 2f;
+                break;
+        }
+        screenPos.z = 0f;
+        return screenPos + sideShift;
+    }
     public Vector3 ScreenToWorldSpace(Vector3 screenPos)
     {
         Vector3 worldPos = cam.ScreenToWorldPoint((Vector2)screenPos + cameraShift);
         worldPos.z = 0f;
         return worldPos;
+    }
+    public Camera GetSideCamera(Side side)
+    {
+        return sideCameras[(int)side];
+    }
+    public float SideCameraScalingFactor(Side side)
+    {
+        Camera sideCam = sideCameras[(int)side];
+        float halfHeight = sideCam.orthographicSize;
+        float halfWidth = halfHeight * sideCam.aspect;
+        float minHalfHeight = orthographicSizeBounds.x;
+        float maxHalfHeight = orthographicSizeBounds.y;
+        return Mathf.InverseLerp(minHalfHeight,maxHalfHeight,halfHeight);
     }
     private void Update()
     {

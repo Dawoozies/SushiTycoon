@@ -10,7 +10,7 @@ using uPools;
 public class AnimatedText : CanvasObject
 {
     TMP_Text text;
-    public LMotionTextAnim mainAnimData;
+    public LMotionAnim mainAnimData;
     public float displayTime;
     public void Initialize(string textInput)
     {
@@ -33,7 +33,7 @@ public class AnimatedText : CanvasObject
             SharedGameObjectPool.Return(gameObject);
         }
     }
-    void DoTextAnim(LMotionTextAnim textAnimData)
+    void DoTextAnim(LMotionAnim textAnimData)
     {
         for (int i = 0; i < text.text.ToCharArray().Length; i++)
         {

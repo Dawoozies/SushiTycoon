@@ -43,6 +43,8 @@ public class Chef : NavigationSystem
                 //display what prep is happening
                 //textLines[0] = $"Cooking Dish : {assignedDish.DishNameText()}";
                 //textLines[1] = assignedDish.PrepDescriptionText();
+                textLines[0] = $"Cooking";
+                textLines[1] = workFunc().PrepDescriptionText();
                 break;
         }
         taskProgressText.textLines = textLines;

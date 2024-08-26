@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -156,13 +155,13 @@ public class QueueSystem : MonoBehaviour
         if (queuePosition == null || queuePosition.Length == 0) return;
 
         Gizmos.color = Color.red;
-        Handles.color = Color.green;
+        //Handles.color = Color.green;
 
         int i = 0;
         foreach (Vector3 position in queuePosition)
         {
             Gizmos.DrawSphere(position, 0.1f); // Draw a sphere at each point
-            Handles.Label(position + Vector3.up * 0.25f + Vector3.left * 0.08f, i.ToString());
+            //Handles.Label(position + Vector3.up * 0.25f + Vector3.left * 0.08f, i.ToString());
             i++;
         }
     }

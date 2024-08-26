@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu]
 public class DishData : ScriptableObject
 {
+    public Sprite sprite;
     public float priceBase;
     public float eatingTime;
     //recipe

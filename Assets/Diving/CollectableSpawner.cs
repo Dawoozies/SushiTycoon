@@ -80,6 +80,7 @@ public class CollectableSpawner : MonoBehaviour
         collectable.SetCollectableData(collectableData);
         collectable.SetSpawnerReturnCallback(() => {
             collectableMainObject.transform.parent = null;
+            collectableMainObject.transform.rotation = Quaternion.identity;
             SharedGameObjectPool.Return(collectableMainObject);
             inactiveCollectables++;
             activeCollectables++;

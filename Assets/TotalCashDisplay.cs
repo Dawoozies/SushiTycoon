@@ -10,8 +10,8 @@ public class TotalCashDisplay : MonoBehaviour
     TMP_Text text;
     float _totalCash;
     [SerializeField] float countChangeTime;
-    public LMotionTextAnim gainMoneyAnim;
-    public LMotionTextAnim loseMoneyAnim;
+    public LMotionAnim gainMoneyAnim;
+    public LMotionAnim loseMoneyAnim;
     MotionHandle motionHandle;
     private void Awake()
     {
@@ -35,7 +35,7 @@ public class TotalCashDisplay : MonoBehaviour
             _totalCash = RestaurantParameters.ins.TotalCash;
         }
     }
-    void DoTextAnim(LMotionTextAnim textAnimData)
+    void DoTextAnim(LMotionAnim textAnimData)
     {
         for (int i = 0; i < text.text.ToCharArray().Length; i++)
         {

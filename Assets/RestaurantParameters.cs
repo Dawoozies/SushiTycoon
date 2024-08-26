@@ -162,7 +162,7 @@ public class RestaurantParameters : MonoBehaviour
             //if we dont need any ingredient amount to make this then
             //it is infinite source
             //making this 1 for now
-            multiple = 999;
+            multiple = 999999;
             return true;
         }
 

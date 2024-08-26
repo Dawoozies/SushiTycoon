@@ -5,9 +5,9 @@ using UnityEngine.UI;
 using uPools;
 public class CanvasObject : MonoBehaviour, IPoolCallbackReceiver
 {
-    [SerializeField] bool worldCanvas;
-    RectTransform rectTransform;
-    public Vector3 position { 
+    [SerializeField] protected bool worldCanvas;
+    protected RectTransform rectTransform;
+    public virtual Vector3 position { 
         get {
             if(worldCanvas)
             {

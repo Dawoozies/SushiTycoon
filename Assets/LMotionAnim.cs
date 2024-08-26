@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [CreateAssetMenu]
-public class LMotionTextAnim : ScriptableObject
+public class LMotionAnim : ScriptableObject
 {
     [Tooltip(".WithDelay(CHARINDEX * delay)")]
     public float delay;
