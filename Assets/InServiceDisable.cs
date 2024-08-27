@@ -9,9 +9,9 @@ public class InServiceDisable : MonoBehaviour
     bool _inService;
     void Update()
     {
-        if(_inService != RestaurantParameters.ins.InService)
+        if(_inService != RestaurantParameters.ins.RestaurantOpen)
         {
-            _inService = RestaurantParameters.ins.InService;
+            _inService = RestaurantParameters.ins.RestaurantOpen;
             if (_inService)
             {
                 onInService?.Invoke();

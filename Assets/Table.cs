@@ -20,7 +20,7 @@ public class Table : MonoBehaviour
         WaitingForBill,
         Dirty,
     }
-    private State state;
+    public State state;
 
     Waiter assignedWaiter;
     Action breakWaiterAssignment;

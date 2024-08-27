@@ -81,7 +81,7 @@ public class ServingCounter : MonoBehaviour
         }
         return false;
     }
-    public bool TryGetCompletedDish(ref Func<Dish> workFunc)
+    public bool TryGetCompletedDish(object o, ref Func<Dish> workFunc)
     {
         workFunc = () => { return null; };
         if(completedDishesReady.Count == 0)
@@ -94,11 +94,14 @@ public class ServingCounter : MonoBehaviour
             if(completedDish.customerReadyForAnotherDish && !completedDish.customerAlreadyBeingGivenAnotherDish)
             {
                 Dish dish = completedDish;
-                workFunc = () => { return dish; };
-                dishToSendOut = completedDishesReady.IndexOf(completedDish);
-                completedDishesReady.RemoveAt(dishToSendOut);
-                completedDish.customerAlreadyBeingGivenAnotherDish = true;
-                return true;
+                if(dish.TryAssign(o))
+                {
+                    workFunc = () => { return dish; };
+                    dishToSendOut = completedDishesReady.IndexOf(completedDish);
+                    completedDishesReady.RemoveAt(dishToSendOut);
+                    completedDish.customerAlreadyBeingGivenAnotherDish = true;
+                    return true;
+                }
             }
         }
         return false;

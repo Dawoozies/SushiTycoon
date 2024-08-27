@@ -64,12 +64,14 @@ public class Chef : NavigationSystem
         {
             SetActiveNavigator(1);
         }
-        if (!nearestServingCounterFound)
+        if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, KitchenObject.ObjectID.ServingCounter, out servingCounter))
         {
-            if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, KitchenObject.ObjectID.ServingCounter, out servingCounter))
-            {
-                nearestServingCounterFound = true;
-            }
+            nearestServingCounterFound = true;
+        }
+        else
+        {
+            nearestServingCounterFound = false;
+
         }
         switch (currentTask)
         {

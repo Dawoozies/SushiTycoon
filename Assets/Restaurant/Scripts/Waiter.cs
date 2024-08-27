@@ -30,6 +30,10 @@ public class Waiter : NavigationSystem
     Vector2 servingCounterOrderPos;
 
     Func<Dish> workFunc;
+
+    Vector3 currentPosition;
+    public float stuckCheckTime = 1f;
+    float _stuckCheckTime;
     protected override void Start()
     {
         base.Start();
@@ -52,12 +56,13 @@ public class Waiter : NavigationSystem
         {
             SetActiveNavigator(1);
         }
-        if (!nearestServingCounterFound)
+        if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, KitchenObject.ObjectID.ServingCounter, out servingCounter))
         {
-            if (KitchenObjects.ins.TryGetClosestObjectWithID(transform.position, KitchenObject.ObjectID.ServingCounter, out servingCounter))
-            {
-                nearestServingCounterFound = true;
-            }
+            nearestServingCounterFound = true;
+        }
+        else
+        {
+            nearestServingCounterFound = false;
         }
         switch (currentTask)
         {
@@ -67,7 +72,7 @@ public class Waiter : NavigationSystem
                     currentTask = Task.CleaningTable;
                     break;
                 }
-                if (nearestServingCounterFound && servingCounter.TryGetCompletedDish(ref workFunc))
+                if (nearestServingCounterFound && servingCounter.TryGetCompletedDish(this, ref workFunc))
                 {
                     currentTask = Task.GetCompletedDish;
                     break;
@@ -84,7 +89,7 @@ public class Waiter : NavigationSystem
             case Task.TakingOrders:
                 SetActiveNavigatorSpeed(runningSpeed);
                 pointNavigator.SetPoint(assignedTable.GetOrderPoint());
-                if(Vector2.Distance(transform.position, assignedTable.GetOrderPoint()) < 0.2f)
+                if(Vector2.Distance(transform.position, assignedTable.GetOrderPoint()) < 0.25f)
                 {
                     if (assignedTable.TryTakeOrders(this, out heldOrders))
                     {
@@ -103,7 +108,7 @@ public class Waiter : NavigationSystem
                 if(nearestServingCounterFound)
                 {
                     pointNavigator.SetPoint(servingCounter.GetIncomingOrderPosition());
-                    if (Vector2.Distance(transform.position, servingCounter.GetIncomingOrderPosition()) < 0.2f)
+                    if (Vector2.Distance(transform.position, servingCounter.GetIncomingOrderPosition()) < 0.25f)
                     {
                         if (heldOrders.Count > 0)
                         {
@@ -120,7 +125,7 @@ public class Waiter : NavigationSystem
             case Task.GetCompletedDish:
                 SetActiveNavigatorSpeed(runningSpeed);
                 pointNavigator.SetPoint(workFunc().transform.position);
-                if(Vector2.Distance(transform.position, workFunc().transform.position) < 0.125f)
+                if(Vector2.Distance(transform.position, workFunc().transform.position) < 0.25f)
                 {
                     workFunc().transform.parent = holdPoint;
                     workFunc().transform.localPosition = Vector2.zero;
@@ -132,9 +137,10 @@ public class Waiter : NavigationSystem
             case Task.TakingCompletedDishToTable:
                 SetActiveNavigatorSpeed(runningSpeed);
                 pointNavigator.SetPoint(workFunc().customerPos);
-                if (Vector2.Distance(transform.position, workFunc().customerPos) < 0.125f)
+                if (Vector2.Distance(transform.position, workFunc().customerPos) < 0.25f)
                 {
                     workFunc().GiveCustomerCompletedDish();
+                    workFunc().ClearAssignment(this);
                     workFunc = null;
                     currentTask = Task.Waiting;
                     break;
@@ -142,8 +148,14 @@ public class Waiter : NavigationSystem
                 break;
             case Task.CleaningTable:
                 SetActiveNavigatorSpeed(runningSpeed);
+                if(assignedTable.state != Table.State.Dirty)
+                {
+                    assignedTable = null;
+                    currentTask = Task.Waiting;
+                    break;
+                }
                 pointNavigator.SetPoint(assignedTable.transform.position);
-                if(Vector2.Distance(transform.position, assignedTable.transform.position) < 0.2f)
+                if(Vector2.Distance(transform.position, assignedTable.transform.position) < 0.25f)
                 {
                     if(assignedTable.CleanTable())
                     {
@@ -153,6 +165,22 @@ public class Waiter : NavigationSystem
                     }
                 }
                 break;
+        }
+
+
+        if(_stuckCheckTime < stuckCheckTime)
+        {
+            _stuckCheckTime += Time.deltaTime;
+        }
+        else
+        {
+            _stuckCheckTime = 0f;
+            float d = Vector3.Distance(currentPosition, transform.position);
+            if(d < 0.001f)
+            {
+                Debug.LogError("CHARACTER STUCK");
+            }
+            currentPosition = transform.position;
         }
     }
 

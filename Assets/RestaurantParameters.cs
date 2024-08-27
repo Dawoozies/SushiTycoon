@@ -30,18 +30,15 @@ public class RestaurantParameters : MonoBehaviour
     public float SingleDishCleaningTime;
     public float TotalCash;
     public float CashDisplayTime;
-    public float OpenTime;
     public int StaffUpperBound;
 
     public float SatisfactionGained;
     public float SatisfactionPerSecond;
     public float SatisfactionPerSecondThreshold;
     public float OpenTimeSeconds;
-    public float ServiceTime;
     public bool RestaurantOpen;
-    public bool InService;
-    public int CustomersActive;
     public int ResearchPointsGained;
+    public int ThresholdPerPoint;
 
     public List<DishData> AllDishes = new();
     [SerializeField] SerializedDictionary<DishData, int> Menu = new();
@@ -210,12 +207,15 @@ public class RestaurantParameters : MonoBehaviour
     {
         float totalCashSave = TotalCash;
         SaveGame.Save("TotalCash", totalCashSave);
+        SaveGame.Save("ResearchPointsGained", ResearchPointsGained);
         SaveGame.Save<Dictionary<string, int>>("ingredientSaveData", ingredientSaveData);
     }
     void Load()
     {
         if(SaveGame.Exists("TotalCash"))
             TotalCash = SaveGame.Load<float>("TotalCash");
+        if (SaveGame.Exists("ResearchPointsGained"))
+            ResearchPointsGained = SaveGame.Load<int>("ResearchPointsGained");
         if(SaveGame.Exists("ingredientSaveData"))
         {
             ingredientSaveData = SaveGame.Load<Dictionary<string, int>>("ingredientSaveData");
@@ -236,44 +236,35 @@ public class RestaurantParameters : MonoBehaviour
             CollectableDataLookUp.TryAdd(collectableData.name, collectableData);
         }
     }
-    public void StartOpen()
+    public void ToggleRestaurant()
     {
-        if(!RestaurantOpen)
-        {
-            OpenTimeSeconds = 0f;
-            ServiceTime = 0f;
-            SatisfactionGained = 0f;
-            InService = true;
-            RestaurantOpen = true;
-        }
+        RestaurantOpen = !RestaurantOpen;
+        SatisfactionGained = 0f;
     }
     void Update()
     {
         if(RestaurantOpen)
         {
-            if (OpenTimeSeconds < OpenTime)
-            {
-                OpenTimeSeconds += Time.deltaTime;
-            }
-            else
-            {
-                RestaurantOpen = false;
-            }
-
+            OpenTimeSeconds += Time.deltaTime;
         }
-        if(InService)
+        else
         {
-            ServiceTime += Time.deltaTime;
-            if (Mathf.Approximately(OpenTimeSeconds, 0f))
-            {
-                ServiceTime = 0.01f;
-            }
-            SatisfactionPerSecond = SatisfactionGained / ServiceTime;
+            OpenTimeSeconds = 0f;
+            return;
+        }
 
-            if(!RestaurantOpen && CustomersActive <= 0)
-            {
-                InService = false;
-            }
+        SatisfactionPerSecondThreshold = Mathf.CeilToInt(10 + ResearchPointsGained * ThresholdPerPoint);
+        if(Mathf.Approximately(OpenTimeSeconds,0f))
+        {
+            OpenTimeSeconds = 0.01f;
+        }
+
+        SatisfactionPerSecond = SatisfactionGained / OpenTimeSeconds;
+
+        if(SatisfactionPerSecond >= SatisfactionPerSecondThreshold)
+        {
+            ResearchPointsGained++;
+            SatisfactionGained = 0f;
         }
     }
     public void CustomerSatisfactionIncrease(float satisfaction)

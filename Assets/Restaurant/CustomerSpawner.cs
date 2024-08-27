@@ -48,8 +48,6 @@ public class CustomerSpawner : MonoBehaviour
             allowSpawning = false;
         }
 
-        RestaurantParameters.ins.CustomersActive = customersActive;
-
         if (!allowSpawning)
             return;
 

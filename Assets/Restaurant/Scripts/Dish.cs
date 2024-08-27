@@ -19,6 +19,7 @@ public class Dish : MonoBehaviour
     public bool customerAlreadyBeingGivenAnotherDish;
     Action<Dish> onDishEaten;
     [SerializeField] SpriteRenderer dishSprite;
+    object assigned;
     public void InitializeDish(Customer assignedCustomer, DishData dishData, Action<Dish> onDishCompletedCallback)
     {
         unfinishedPrep.Clear();
@@ -120,5 +121,17 @@ public class Dish : MonoBehaviour
     public void RegisterOnEatenCallback(Action<Dish> dishEatenAction)
     {
         onDishEaten += dishEatenAction;
+    }
+    public bool TryAssign(object o)
+    {
+        if (assigned != null && assigned != o)
+            return false;
+        assigned = o;
+        return true;
+    }
+    public void ClearAssignment(object o)
+    {
+        if (assigned == o)
+            assigned = null;
     }
 }

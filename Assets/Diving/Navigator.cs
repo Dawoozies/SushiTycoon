@@ -32,6 +32,7 @@ public abstract class Navigator : MonoBehaviour, INavigator
     }
     [SerializeField] protected bool isActiveNavigator;
     [SerializeField] protected bool movementAllowed;
+    protected static float agentDrift = 0.0001f;
     protected virtual void Update()
     {
         if (!agent.isOnNavMesh)
