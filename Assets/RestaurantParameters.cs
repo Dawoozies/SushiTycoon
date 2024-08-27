@@ -32,6 +32,17 @@ public class RestaurantParameters : MonoBehaviour
     public float CashDisplayTime;
     public float OpenTime;
     public int StaffUpperBound;
+
+    public float SatisfactionGained;
+    public float SatisfactionPerSecond;
+    public float SatisfactionPerSecondThreshold;
+    public float OpenTimeSeconds;
+    public float ServiceTime;
+    public bool RestaurantOpen;
+    public bool InService;
+    public int CustomersActive;
+    public int ResearchPointsGained;
+
     public List<DishData> AllDishes = new();
     [SerializeField] SerializedDictionary<DishData, int> Menu = new();
     [SerializeField] SerializedDictionary<CollectableData, int> ingredients = new();
@@ -224,5 +235,49 @@ public class RestaurantParameters : MonoBehaviour
         {
             CollectableDataLookUp.TryAdd(collectableData.name, collectableData);
         }
+    }
+    public void StartOpen()
+    {
+        if(!RestaurantOpen)
+        {
+            OpenTimeSeconds = 0f;
+            ServiceTime = 0f;
+            SatisfactionGained = 0f;
+            InService = true;
+            RestaurantOpen = true;
+        }
+    }
+    void Update()
+    {
+        if(RestaurantOpen)
+        {
+            if (OpenTimeSeconds < OpenTime)
+            {
+                OpenTimeSeconds += Time.deltaTime;
+            }
+            else
+            {
+                RestaurantOpen = false;
+            }
+
+        }
+        if(InService)
+        {
+            ServiceTime += Time.deltaTime;
+            if (Mathf.Approximately(OpenTimeSeconds, 0f))
+            {
+                ServiceTime = 0.01f;
+            }
+            SatisfactionPerSecond = SatisfactionGained / ServiceTime;
+
+            if(!RestaurantOpen && CustomersActive <= 0)
+            {
+                InService = false;
+            }
+        }
+    }
+    public void CustomerSatisfactionIncrease(float satisfaction)
+    {
+        SatisfactionGained += satisfaction;
     }
 }

@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityHFSM;
 
 public class MenuStateMachine : MonoBehaviour
 {
+    [SerializeField] MenuState state;
     StateMachine<MenuState> menuStateMachine = new StateMachine<MenuState>();
     [SerializeField] RectTransform menuRect;
     [SerializeField] float transitionTime;
@@ -15,13 +17,12 @@ public class MenuStateMachine : MonoBehaviour
     [SerializeField] RectTransform closedRect;
     [SerializeField] RectTransform openRect;
     MotionHandle motionHandle;
-    [SerializeField] TMP_Text buildMenuArrow;
+    public UnityEvent<MenuState> onStateChanged;
     public enum MenuState
     {
         Closed,
         Open,
     }
-    MenuState state;
     void Start()
     {
         menuStateMachine.AddState(MenuState.Closed, new State<MenuState>(onLogic: state => { }));
@@ -33,6 +34,8 @@ public class MenuStateMachine : MonoBehaviour
         menuStateMachine.StateChanged += OnStateChanged;
 
         menuStateMachine.Init();
+
+        menuStateMachine.RequestStateChange(state);
     }
     void OnStateChanged(StateBase<MenuState> state)
     {
@@ -48,8 +51,6 @@ public class MenuStateMachine : MonoBehaviour
             LMotion.Create(closedRect.rect.height, openRect.rect.height, transitionTime)
                 .WithEase(openEasing)
                 .Bind(x => menuRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x));
-
-            buildMenuArrow.text = "-->";
         }
         else
         {
@@ -62,8 +63,6 @@ public class MenuStateMachine : MonoBehaviour
             LMotion.Create(openRect.rect.height, closedRect.rect.height, transitionTime)
                 .WithEase(closeEasing)
                 .Bind(x => menuRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, x));
-
-            buildMenuArrow.text = "<--";
         }
     }
     public void ChangeState()
@@ -81,5 +80,6 @@ public class MenuStateMachine : MonoBehaviour
         }
 
         menuStateMachine.RequestStateChange(state);
+        onStateChanged?.Invoke(state);
     }
 }

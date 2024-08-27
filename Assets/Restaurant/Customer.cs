@@ -24,6 +24,7 @@ public class Customer : NavigationSystem
     public float walkingSpeed;
     public float queueSpeed;
     public float leavingSpeed;
+    public float satisfaction;
     MoveInDirectionNavigator moveInDirectionNavigator;
     PointNavigator pointNavigator;
     CustomerSpawner spawner;
@@ -102,6 +103,11 @@ public class Customer : NavigationSystem
         else
         {
             SetActiveNavigator(1);
+        }
+
+        if(assignedTable != null)
+        {
+            satisfaction -= Time.deltaTime * RestaurantParameters.ins.CustomerSatisfactionDecay;
         }
 
         switch (currentTask)
@@ -203,6 +209,7 @@ public class Customer : NavigationSystem
         transform.position = spawnPos;
         //Warp(spawnPos);
         patience = RestaurantParameters.ins.GetRandomPatience();
+        satisfaction = 100;
     }
     void OnDespawnDetected(Collider2D despawnCollider)
     {
@@ -280,6 +287,7 @@ public class Customer : NavigationSystem
             assignedTable.SetTableDirty();
             awaitingOrder = null;
             RestaurantParameters.ins.CustomerPayBill(totalOrderPrice);
+            RestaurantParameters.ins.CustomerSatisfactionIncrease(satisfaction);
             AnimatedTextPool.ins.Request(transform.position + Vector3.up*0.2f, $"+ ${totalOrderPrice}");
             totalOrderPrice = 0f;
             LeaveTable();

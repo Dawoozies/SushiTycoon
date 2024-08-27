@@ -39,20 +39,16 @@ public class CustomerSpawner : MonoBehaviour
     }
     void Update()
     {
-
-        if (openTime < RestaurantParameters.ins.OpenTime)
+        if(RestaurantParameters.ins.RestaurantOpen)
         {
-            openTime += Time.deltaTime;
+            allowSpawning = true;
         }
         else
         {
-            if(customersActive <= 0)
-            {
-                openTime = 0f;
-                ModeManager.ins.SwapGameMode(ModeManager.Mode.BuildMode);
-            }
             allowSpawning = false;
         }
+
+        RestaurantParameters.ins.CustomersActive = customersActive;
 
         if (!allowSpawning)
             return;
@@ -129,11 +125,6 @@ public class CustomerSpawner : MonoBehaviour
     {
         int despawnerIndex = Random.Range(0, despawners.Length);
         return despawners[despawnerIndex].position;
-    }
-    public void OnOpenModeEnter()
-    {
-        allowSpawning = true;
-        openTime = 0f;
     }
     void OnDrawGizmosSelected()
     {
