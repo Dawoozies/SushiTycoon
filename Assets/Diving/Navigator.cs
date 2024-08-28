@@ -13,6 +13,7 @@ using UnityEngine.AI;
 //do random walk and a patrol path
 public abstract class Navigator : MonoBehaviour, INavigator
 {
+
     [HideInInspector] public NavMeshAgent agent;
     [SerializeField] protected NavMeshAreas allowedAreas;
     [Disable] public Vector3 destination;
