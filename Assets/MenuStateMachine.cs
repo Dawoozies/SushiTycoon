@@ -82,4 +82,8 @@ public class MenuStateMachine : MonoBehaviour
         menuStateMachine.RequestStateChange(state);
         onStateChanged?.Invoke(state);
     }
+    public void AddListener(UnityAction<MenuState> listener)
+    {
+        onStateChanged.AddListener(listener);
+    }
 }

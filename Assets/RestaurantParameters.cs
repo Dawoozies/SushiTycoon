@@ -40,7 +40,21 @@ public class RestaurantParameters : MonoBehaviour
     public int ResearchPointsGained;
     public int ThresholdPerPoint;
 
-    public float waiterRunningSpeed;
+    public float WaiterRunningSpeed, WaiterSpeedIncrease;
+    public int WaiterResearchTier, WaiterMaxResearchTier, WaiterResearchCost;
+
+    public float ChefRunningSpeed, ChefSpeedIncrease;
+    public int ChefResearchTier, ChefMaxResearchTier, ChefResearchCost;
+
+
+    public float DiverRunningSpeed, DiverSpeedIncrease;
+    public int DiverResearchTier, DiverMaxResearchTier, DiverResearchCost;
+
+
+    public float DockWorkerRunningSpeed, DockWorkerSpeedIncrease;
+    public int DockWorkerResearchTier, DockWorkerMaxResearchTier, DockWorkerResearchCost;
+
+
 
     public List<DishData> AllDishes = new();
     [SerializeField] SerializedDictionary<DishData, int> Menu = new();

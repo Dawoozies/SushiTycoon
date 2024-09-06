@@ -26,7 +26,7 @@ public class Waiter : NavigationSystem
     ServingCounter servingCounter;
     bool nearestServingCounterFound;
 
-    public float runningSpeed => RestaurantParameters.ins.waiterRunningSpeed;
+    public float runningSpeed => RestaurantParameters.ins.WaiterRunningSpeed;
     Vector2 servingCounterOrderPos;
 
     Func<Dish> workFunc;

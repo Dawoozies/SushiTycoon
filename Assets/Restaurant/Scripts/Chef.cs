@@ -20,7 +20,7 @@ public class Chef : NavigationSystem
     [SerializeField, Disable] bool nearestServingCounterFound;
 
     Func<Dish> workFunc;
-    [SerializeField] float runningSpeed;
+    public float runningSpeed => RestaurantParameters.ins.ChefRunningSpeed;
     protected override void Start()
     {
         base.Start();
