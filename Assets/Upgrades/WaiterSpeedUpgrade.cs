@@ -23,7 +23,7 @@ public class WaiterSpeedUpgrade : MonoBehaviour
     }
     public void OnUpgrade()
     {
-        if (cost < RestaurantParameters.ins.ResearchPointsGained && upgradable)
+        if (cost <= RestaurantParameters.ins.ResearchPointsGained && upgradable)
         {
             RestaurantParameters.ins.ResearchPointsGained -= cost;
             RestaurantParameters.ins.WaiterRunningSpeed += waiterSpeedIncrease;
